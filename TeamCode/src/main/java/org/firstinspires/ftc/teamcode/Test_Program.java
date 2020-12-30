@@ -62,7 +62,6 @@ public class Test_Program extends LinearOpMode
     private DcMotor rightDrive = null;
     private DcMotor BleftDrive = null;
     private DcMotor BrightDrive = null;
-    double speedVar = 0.5;
 
 
 
@@ -125,6 +124,27 @@ public class Test_Program extends LinearOpMode
         rightDrive.setPower(rightPower);
         BleftDrive.setPower(BleftPower);
         BrightDrive.setPower(BrightPower);
+
+    }
+
+
+
+    /* Valued Information:
+    Encoder Value For One Rotation:
+    Wheel Circumference:
+
+     */
+    public void moveToTarget(int targetX, int targetY, int desiredSpeed){
+
+        boolean isVerticle = false;
+        boolean isHorizontal = false;
+
+        if(targetX == 0 && targetY != 0){
+            isVerticle = true;
+        }
+        if(targetX != 0 && targetY == 0){
+            isHorizontal = true;
+        }
 
     }
 
