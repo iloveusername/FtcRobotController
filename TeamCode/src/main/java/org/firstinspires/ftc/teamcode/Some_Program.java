@@ -29,15 +29,10 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
-
-import static java.lang.Thread.sleep;
 
 /**
  * This file contains an example of an iterative (Non-Linear) "OpMode".
@@ -53,14 +48,13 @@ import static java.lang.Thread.sleep;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="Test_Program", group="Test")
-public class Test_Program extends LinearOpMode
+@Autonomous(name="Some_Program", group="Test")
+public class Some_Program extends LinearOpMode
 {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
-    private DcMotor BleftDrive = null;
     private DcMotor BrightDrive = null;
     double speedVar = 0.5;
 
@@ -79,13 +73,12 @@ public class Test_Program extends LinearOpMode
         // step (using the FTC Robot Controller app on the phone).
         leftDrive  = hardwareMap.get(DcMotor.class, "FL");
         rightDrive = hardwareMap.get(DcMotor.class, "FR");
-        BleftDrive  = hardwareMap.get(DcMotor.class, "BL");
         BrightDrive = hardwareMap.get(DcMotor.class, "BR");
 
         //This lets the motors run without encoders active, go figure
         leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        BleftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
         BrightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
 
@@ -93,7 +86,7 @@ public class Test_Program extends LinearOpMode
         // Reverse the motor that runs backwards when connected directly to the battery
         leftDrive.setDirection(DcMotor.Direction.FORWARD);
         rightDrive.setDirection(DcMotor.Direction.REVERSE);
-        BleftDrive.setDirection(DcMotor.Direction.FORWARD);
+
         BrightDrive.setDirection(DcMotor.Direction.REVERSE);
 
         // Tell the driver that initialization is complete.
@@ -113,17 +106,16 @@ public class Test_Program extends LinearOpMode
     public void letsMove(double speedVar){
         double leftPower;
         double rightPower;
-        double BleftPower;
+
         double BrightPower;
 
         leftPower = speedVar;
         rightPower = speedVar;
-        BleftPower = speedVar;
+
         BrightPower = speedVar;
 
         leftDrive.setPower(leftPower);
         rightDrive.setPower(rightPower);
-        BleftDrive.setPower(BleftPower);
         BrightDrive.setPower(BrightPower);
 
     }
