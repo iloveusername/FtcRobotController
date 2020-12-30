@@ -62,7 +62,6 @@ public class Test_Program extends LinearOpMode
     private DcMotor rightDrive = null;
     private DcMotor BleftDrive = null;
     private DcMotor BrightDrive = null;
-    double speedVar = 0.5;
 
 
 
