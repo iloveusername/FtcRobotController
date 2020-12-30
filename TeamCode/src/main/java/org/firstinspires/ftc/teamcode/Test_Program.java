@@ -130,9 +130,8 @@ public class Test_Program extends LinearOpMode
 
 
     /* Valued Information:
-    Encoder Value For One Rotation:
-    Wheel Circumference:
-
+    Encoder Value For One Rotation: 537.6
+    Wheel Circumference: 0.32 Meters
      */
     public void moveToTarget(int targetX, int targetY, int desiredSpeed){
 
