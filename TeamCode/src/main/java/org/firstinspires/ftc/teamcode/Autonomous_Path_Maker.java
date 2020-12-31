@@ -4,6 +4,7 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
@@ -51,6 +52,8 @@ public class Autonomous_Path_Maker extends LinearOpMode
             moveToTarget(0.5, 0.5, 0.5);
             moveToTarget(0.5, 0.5, -0.5);
 
+            rotateToAngle(0);
+
             stop();
 
         }
@@ -71,6 +74,11 @@ public class Autonomous_Path_Maker extends LinearOpMode
         double angleTan = (targetY/targetX);
         double angleMath = Math.atan(angleTan) * 180/3.14;
         double angle = angleMath - (90 * targetX/Math.abs(targetX));
+        boolean goBack = false;
+        if(desiredSpeed < 0){
+            goBack = true;
+            desiredSpeed = Math.abs(desiredSpeed);
+        }
 
         if(angle != angle){
             if(targetY > 0){
@@ -112,7 +120,12 @@ public class Autonomous_Path_Maker extends LinearOpMode
                 }
             }
             if (targetLocked) {
-                wheelsForward();
+                if(goBack){
+                    wheelsBackwards();
+                }
+                if(!goBack){
+                    wheelsForward();
+                }
                 encoderDrive(encoderDistance, desiredSpeed);
                 complete = true;
                 telemetry.addData("Complete", "Complete");
@@ -126,6 +139,34 @@ public class Autonomous_Path_Maker extends LinearOpMode
             telemetry.addData("Target Locked?", targetLocked);
             telemetry.update();
         }
+    }
+
+    public void rotateToAngle(double angle){
+
+        boolean isDone = false;
+        double desiredAngle = angle;
+        while(!isDone){
+
+            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+
+            if (angles.firstAngle > desiredAngle) {
+                wheelsTurn();
+                wheelsSpin(0.5);
+                telemetry.update();
+            }
+
+            if (angles.firstAngle < desiredAngle) {
+                wheelsTurn();
+                wheelsSpin(-0.5);
+                telemetry.update();
+            }
+
+            if (angles.firstAngle < desiredAngle + 1 && angles.firstAngle > desiredAngle - 1) {
+                isDone = true;
+            }
+
+        }
+
     }
 
     public void encoderDrive(int desiredEncoder, double desiredSpeed){
@@ -173,6 +214,13 @@ public class Autonomous_Path_Maker extends LinearOpMode
         rightDrive.setDirection(DcMotor.Direction.REVERSE);
         BleftDrive.setDirection(DcMotor.Direction.FORWARD);
         BrightDrive.setDirection(DcMotor.Direction.REVERSE);
+    }
+
+    public void wheelsBackwards(){
+        leftDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightDrive.setDirection(DcMotor.Direction.FORWARD);
+        BleftDrive.setDirection(DcMotor.Direction.REVERSE);
+        BrightDrive.setDirection(DcMotor.Direction.FORWARD);
     }
 
     public void wheelsSideways(){
