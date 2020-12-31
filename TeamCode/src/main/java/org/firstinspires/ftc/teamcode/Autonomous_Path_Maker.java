@@ -74,6 +74,7 @@ public class Autonomous_Path_Maker extends LinearOpMode
         double angleTan = (targetY/targetX);
         double angleMath = Math.atan(angleTan) * 180/3.14;
         double angle = angleMath - (90 * targetX/Math.abs(targetX));
+        double persistantRotation = 0;
         boolean goBack = false;
         if(desiredSpeed < 0){
             goBack = true;
@@ -140,6 +141,9 @@ public class Autonomous_Path_Maker extends LinearOpMode
             telemetry.addData("Target Locked?", targetLocked);
             telemetry.update();
         }
+        persistantRotation = persistantRotation + angle;
+        telemetry.addData("Persistant Rotation", persistantRotation);
+        telemetry.update();
     }
 
     public void rotateToAngle(double angle){

@@ -4,15 +4,14 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
-@Autonomous(name="Rotation With Encoders", group="Test")
-public class RotationWithEncoders extends LinearOpMode
+@Autonomous(name="TryTwo")
+public class TryTwo extends LinearOpMode
 {
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
@@ -21,6 +20,9 @@ public class RotationWithEncoders extends LinearOpMode
 
     BNO055IMU imu;
     Orientation angles;
+
+
+
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -44,15 +46,17 @@ public class RotationWithEncoders extends LinearOpMode
 
         while(opModeIsActive()) {
 
-
             moveToTarget(-0.5, 0.5, 0.5);
             moveToTarget(-0.5, 0.5, -0.5);
             moveToTarget(0.5, 0.5, 0.5);
             moveToTarget(0.5, 0.5, -0.5);
 
+            rotateToAngle(0);
+
             stop();
 
         }
+
           }
 
 
@@ -69,12 +73,6 @@ public class RotationWithEncoders extends LinearOpMode
         double angleTan = (targetY/targetX);
         double angleMath = Math.atan(angleTan) * 180/3.14;
         double angle = angleMath - (90 * targetX/Math.abs(targetX));
-        double persistantRotation = 0;
-
-
-        int angleEncoder = (int) Math.round(angle*22.2222);
-
-
         boolean goBack = false;
         if(desiredSpeed < 0){
             goBack = true;
@@ -95,7 +93,6 @@ public class RotationWithEncoders extends LinearOpMode
         if(hypotenuse != hypotenuse){
             hypotenuse = Math.abs(targetY);
         }
-
         int encoderDistance = (int) Math.round(hypotenuse * 1620);
 
         boolean targetLocked = false;
@@ -104,24 +101,9 @@ public class RotationWithEncoders extends LinearOpMode
 
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
-
-
             if (!targetLocked) {
-                if (angles.firstAngle > angle) {
-                    //angleEncoder = Math.round(angleEncoder-angles.firstAngle);
-                    //rotationEncoder(angleEncoder, 0.05);
-                    telemetry.update();
-                }
-
-                if (angles.firstAngle < angle) {
-                    //angleEncoder = Math.round(angleEncoder-angles.firstAngle);
-                   //rotationEncoder(angleEncoder, -0.05);
-                    telemetry.update();
-                }
-
-                if (angles.firstAngle < angle + 1 && angles.firstAngle > angle - 1) {
-                    targetLocked = true;
-                }
+                rotateWithEncodersToAngle(angle - angles.firstAngle);
+                targetLocked = true;
             }
 
             if (targetLocked) {
@@ -137,35 +119,59 @@ public class RotationWithEncoders extends LinearOpMode
                 telemetry.update();
             }
 
-            telemetry.addData("encoderAngles", angleEncoder);
-            //telemetry.addData("Hypotenuse", hypotenuse);
+            telemetry.addData("Hypotenuse", hypotenuse);
             telemetry.addData("Angle", angle);
             telemetry.addData("Heading", angles.firstAngle);
-            //telemetry.addData("Distance Needed", encoderDistance);
+            telemetry.addData("Distance Needed", encoderDistance);
             telemetry.addData("Target Locked?", targetLocked);
             telemetry.update();
         }
-        persistantRotation = persistantRotation + angle;
-        telemetry.addData("Persistant Rotation", persistantRotation);
     }
 
-    public void rotateToAngleEncoders(double angle){
+    public void rotateToAngle(double angle){
 
         boolean isDone = false;
-
         double desiredAngle = angle;
 
         while(!isDone){
 
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
+            if (angles.firstAngle > desiredAngle) {
+                wheelsTurn();
+                wheelsSpin(0.5);
+                telemetry.update();
+            }
+
+            if (angles.firstAngle < desiredAngle) {
+                wheelsTurn();
+                wheelsSpin(-0.5);
+                telemetry.update();
+            }
+
+            if (angles.firstAngle < desiredAngle + 1 && angles.firstAngle > desiredAngle - 1) {
+                isDone = true;
+            }
 
         }
 
     }
 
-    public void encoderDrive(int desiredEncoder, double desiredSpeed){
+    public void rotateWithEncodersToAngle(double angle){
+        double desiredAngle = angle * 2000/90;
+        int goToAngle = (int) Math.round(desiredAngle);
+        if (desiredAngle > 0) {
+           wheelsTurnRight();
+        }
+        if (desiredAngle < 0) {
+            wheelsTurnLeft();
+        }
+        encoderDrive(goToAngle, 0.25);
 
+
+    }
+
+    public void encoderDrive(int desiredEncoder, double desiredSpeed){
         leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         BleftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -226,18 +232,11 @@ public class RotationWithEncoders extends LinearOpMode
         BrightDrive.setDirection(DcMotor.Direction.REVERSE);
     }
 
-    public void wheelsTurnRight(){
+    public void wheelsTurn(){
         leftDrive.setDirection(DcMotor.Direction.FORWARD);
         rightDrive.setDirection(DcMotor.Direction.FORWARD);
         BleftDrive.setDirection(DcMotor.Direction.FORWARD);
         BrightDrive.setDirection(DcMotor.Direction.FORWARD);
-    }
-
-    public void wheelsTurnLeft(){
-        leftDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightDrive.setDirection(DcMotor.Direction.REVERSE);
-        BleftDrive.setDirection(DcMotor.Direction.REVERSE);
-        BrightDrive.setDirection(DcMotor.Direction.REVERSE);
     }
 
     public void wheelsSpin(double speed){
@@ -252,6 +251,21 @@ public class RotationWithEncoders extends LinearOpMode
         BrightDrive.setPower(speed);
 
     }
+
+    public void wheelsTurnRight(){
+        leftDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightDrive.setDirection(DcMotor.Direction.FORWARD);
+        BleftDrive.setDirection(DcMotor.Direction.FORWARD);
+        BrightDrive.setDirection(DcMotor.Direction.FORWARD);
+    }
+
+    public void wheelsTurnLeft(){
+        leftDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightDrive.setDirection(DcMotor.Direction.REVERSE);
+        BleftDrive.setDirection(DcMotor.Direction.REVERSE);
+        BrightDrive.setDirection(DcMotor.Direction.REVERSE);
+    }
+
     public void wheelsStop(){
 
         leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -263,74 +277,5 @@ public class RotationWithEncoders extends LinearOpMode
         rightDrive.setPower(0);
         BleftDrive.setPower(0);
         BrightDrive.setPower(0);
-    }
-    public void rotationEncoder(int inputAngle, double desiredSpeed){
-
-        int desiredEncoder = (int) Math.round(inputAngle * 22.22222);
-
-        boolean goRight = false;
-        if (desiredSpeed > 0){
-            goRight = true;
-        }
-        if(desiredSpeed < 0){
-            goRight = false;
-        }
-
-        if(goRight){
-            leftDrive.setDirection(DcMotor.Direction.FORWARD);
-            rightDrive.setDirection(DcMotor.Direction.FORWARD);
-            BleftDrive.setDirection(DcMotor.Direction.FORWARD);
-            BrightDrive.setDirection(DcMotor.Direction.FORWARD);
-        }
-
-        if (!goRight){
-            leftDrive.setDirection(DcMotor.Direction.REVERSE);
-            rightDrive.setDirection(DcMotor.Direction.REVERSE);
-            BleftDrive.setDirection(DcMotor.Direction.REVERSE);
-            BrightDrive.setDirection(DcMotor.Direction.REVERSE);
-        }
-
-        desiredSpeed = Math.abs(desiredSpeed);
-
-        leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        BleftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        BrightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        BleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        BrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        leftDrive.setTargetPosition(desiredEncoder);
-        rightDrive.setTargetPosition(desiredEncoder);
-        BleftDrive.setTargetPosition(desiredEncoder);
-        BrightDrive.setTargetPosition(desiredEncoder);
-
-        leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        BleftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        BrightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        leftDrive.setPower(desiredSpeed);
-        rightDrive.setPower(desiredSpeed);
-        BleftDrive.setPower(desiredSpeed);
-        BrightDrive.setPower(desiredSpeed);
-
-        while(leftDrive.isBusy() || rightDrive.isBusy() || BleftDrive.isBusy() || BrightDrive.isBusy()){
-            telemetry.addData("Encoder Count", leftDrive.getCurrentPosition());
-            telemetry.addData("Target Encoder", desiredEncoder);
-            telemetry.update();
-        }
-
-        leftDrive.setPower(0);
-        rightDrive.setPower(0);
-        BleftDrive.setPower(0);
-        BrightDrive.setPower(0);
-
-        leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        BleftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        BrightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 }
