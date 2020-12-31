@@ -4,15 +4,14 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
-@Autonomous(name="Enocder Rotation", group="Tools")
-public class Encoders_For_Rotation extends LinearOpMode
+@Autonomous(name="NumberHandler", group="Tools")
+public class NumberHandlerTest extends LinearOpMode
 {
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
@@ -22,10 +21,7 @@ public class Encoders_For_Rotation extends LinearOpMode
     //This is the onboard gyroscope, pretty neat.
     BNO055IMU imu;
     Orientation angles;
-    int currentAngle = 0;
-    int currentX = 0;
-    int currentY = 0;
-
+    int countNumbers = 0;
 
     @Override
     public void runOpMode()  {
@@ -36,6 +32,8 @@ public class Encoders_For_Rotation extends LinearOpMode
         parameters.calibrationDataFile = "BNO055IMUCalibration.json";
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
+
+
 
         waitForStart();
 
@@ -48,76 +46,34 @@ public class Encoders_For_Rotation extends LinearOpMode
 
         while(opModeIsActive()) {
 
-            //Put Movement Here
-            moveToTarget(-0.5, 0.5, 0.5);
-            moveToTarget(-0.5, 0.5, -0.5);
-            moveToTarget(0.5, 0.5, 0.5);
-            moveToTarget(0.5, 0.5, -0.5);
-            moveToTarget(0, 0.5, 0.5);
-            moveToTarget(0, 0.5, -0.5);
-
-            //This makes the robot set itself back up nicely once the code is finished.
-            stop();
+            addToRotation();
+            //stop();
 
         }
 
           }
 
     /* Valued Information:
-    Encoder Value For One Rotation: 537.6
-    Wheel Circumference: 0.32 Meters
-    1 Meter In Encoder Values: 1620
+    Encoder Value For One Rotation: 537.6.
+    Wheel Circumference: 0.32 Meters.
+    1 Meter In Encoder Values: 1620.
+    90 Degree Turn In Encoder Values: 2000.
      */
 
+    public void addToRotation(){
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        countNumbers = Math.round(angles.firstAngle * -1);
+        telemetry.addData("Count", countNumbers);
+        telemetry.update();
+    }
+
     public void moveToTarget(double targetX, double targetY, double desiredSpeed){
-
-        //Sets up a boolean for if the rotation section goes left or right.
-        boolean goRight = true;
-
-        //Basically Odometry Stuff.
-        currentX += targetX;
-        currentY += targetY;
 
         //This chunk of code takes the target X and Y values, gives us a hypotenuse and angle.
         double hypotenuse = Math.sqrt(targetX * targetX + targetY * targetY);
         double angleTan = (targetY/targetX);
         double angleMath = Math.atan(angleTan) * 180/3.14;
-        double angle = angleMath;
-
-        //Logic For Rotation.
-        if(angle > 0){
-            goRight = true;
-        }
-        if(angle < 0){
-            goRight = false;
-        }
-
-        //Diving by 0 gives us a number that doesn't exist, this checks for that and acts accordingly. The only cases where this happens are straight up or straight down, so based on the target Y value, we set the angle to either one.
-        if(angle != angle){
-            if(targetY > 0){
-                angle = -90;
-            }
-            if(targetY < 0){
-                angle = 90;
-            }
-        }
-
-        //Outlying Conditions For Math Or Something, I don't know, I just want working code.
-        if(targetX == 0){
-            if(targetY != 0){
-                if(targetY > 0){
-                    angle = 0;
-                }
-                if(targetY < 0){
-                    angle = 180;
-                }
-            }
-        }
-        telemetry.addData("Angle", angle);
-        telemetry.update();
-
-        //Encoder Stuff For Encoder People.
-        int encoderRotation = (int) Math.round(angle * 2000 / 90);
+        double angle = angleMath - (90 * targetX/Math.abs(targetX));
 
         //Sees if we gave it a negative speed, allows us to go backwards.
         boolean goBack = false;
@@ -126,7 +82,15 @@ public class Encoders_For_Rotation extends LinearOpMode
             desiredSpeed = Math.abs(desiredSpeed);
         }
 
-
+        //Diving by 0 gives us a number that doesn't exist, this checks for that and acts accordingly. The only cases where this happens are straight up or straight down, so based on the target Y value, we set the angle to either one.
+        if(angle != angle){
+            if(targetY > 0){
+                angle = 0;
+            }
+            if(targetY < 0){
+                angle = 180;
+            }
+        }
 
         boolean complete = false;
 
@@ -141,28 +105,31 @@ public class Encoders_For_Rotation extends LinearOpMode
         boolean targetLocked = false;
 
         //Makes sure the program doesn't skip to the next part without completing the encoder stuff.
-        while(!complete && opModeIsActive()) {
+        while(!complete) {
 
             //This updates the gyroscope, and lets us see the current angle.
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-            int distanceToturn = Math.abs(encoderRotation - currentAngle);
 
             //This code simply turns the robot until it reaches a desired angle, by comparing current angle to the one we want.
             if (!targetLocked) {
-                if (goRight){
-                    wheelsTurnRight();
-                    encoderDrive(distanceToturn, 0.3);
-                    targetLocked = true;
-                }
-                if (!goRight){
-                    wheelsTurnLeft();
-                    encoderDrive(distanceToturn, 0.3);
-                    targetLocked = true;
+                if (angles.firstAngle > angle) {
+                    wheelsTurn();
+                    wheelsSpin(0.5);
+                    telemetry.update();
                 }
 
+                if (angles.firstAngle < angle) {
+                    wheelsTurn();
+                    wheelsSpin(-0.5);
+                    telemetry.update();
+                }
+
+                if (angles.firstAngle < angle + 1 && angles.firstAngle > angle - 1) {
+                    targetLocked = true;
+                }
             }
 
-            //Once at the target angle, the robot will switch to encoders and travel the distance of the hypotenuse.
+            //Once at a target angle, the robot will switch to encoders and travel the distance of the hypotenuse.
             if (targetLocked) {
 
                 //Logic for going forwards or backwards.
@@ -174,25 +141,18 @@ public class Encoders_For_Rotation extends LinearOpMode
                 }
 
                 encoderDrive(encoderDistance, desiredSpeed);
-                currentAngle = encoderRotation;
 
                 //Breaks the loop by setting complete to true.
                 complete = true;
+                telemetry.addData("Complete", "Complete");
                 telemetry.update();
             }
 
-//            telemetry.addData("Hypotenuse", hypotenuse);
-//            telemetry.addData("Distance Needed", encoderDistance);
-//            telemetry.addData("Target Locked?", targetLocked);
-//            telemetry.addData("Rotation In Encoder", encoderRotation);
-//            telemetry.addData("Heading", angles.firstAngle);
-//            telemetry.addData("Current Angle In Encoders", currentAngle);
-//            telemetry.addData("Distance To Turn In Encoders", distanceToturn);
-//            telemetry.addData("Angle", angle);
-//            telemetry.addData("Go Right?", goRight);
-            telemetry.addData("Current Rotation", currentAngle/2000*90);
-            telemetry.addData("Target Rotation", encoderRotation/2000*90);
-            telemetry.addData("Distance To Rotate", distanceToturn);
+            telemetry.addData("Hypotenuse", hypotenuse);
+            telemetry.addData("Angle", angle);
+            telemetry.addData("Heading", angles.firstAngle);
+            telemetry.addData("Distance Needed", encoderDistance);
+            telemetry.addData("Target Locked?", targetLocked);
             telemetry.update();
         }
     }
@@ -203,7 +163,7 @@ public class Encoders_For_Rotation extends LinearOpMode
         boolean isDone = false;
         double desiredAngle = angle;
 
-        while(!isDone && opModeIsActive()){
+        while(!isDone){
 
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
@@ -299,20 +259,6 @@ public class Encoders_For_Rotation extends LinearOpMode
         BrightDrive.setDirection(DcMotor.Direction.FORWARD);
     }
 
-    public void wheelsTurnRight(){
-        leftDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightDrive.setDirection(DcMotor.Direction.FORWARD);
-        BleftDrive.setDirection(DcMotor.Direction.FORWARD);
-        BrightDrive.setDirection(DcMotor.Direction.FORWARD);
-    }
-
-    public void wheelsTurnLeft(){
-        leftDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightDrive.setDirection(DcMotor.Direction.REVERSE);
-        BleftDrive.setDirection(DcMotor.Direction.REVERSE);
-        BrightDrive.setDirection(DcMotor.Direction.REVERSE);
-    }
-
     //Weeeeeeeeee.
     public void wheelsSpin(double speed){
         leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -324,6 +270,7 @@ public class Encoders_For_Rotation extends LinearOpMode
         rightDrive.setPower(speed);
         BleftDrive.setPower(speed);
         BrightDrive.setPower(speed);
+
     }
 
     //Stop wheels function makes the wheels stop. What more could you ask for?
@@ -339,5 +286,4 @@ public class Encoders_For_Rotation extends LinearOpMode
         BleftDrive.setPower(0);
         BrightDrive.setPower(0);
     }
-
 }
