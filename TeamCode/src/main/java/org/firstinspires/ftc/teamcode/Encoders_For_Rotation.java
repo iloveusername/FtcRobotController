@@ -72,7 +72,7 @@ public class Encoders_For_Rotation extends LinearOpMode
         double hypotenuse = Math.sqrt(targetX * targetX + targetY * targetY);
         double angleTan = (targetY/targetX);
         double angleMath = Math.atan(angleTan) * 180/3.14;
-        double angle = angleMath - (90 * targetX/Math.abs(targetX));
+        double angle = angleMath;
 
         //Logic For Rotation.
         if(angle > 0){
@@ -122,6 +122,7 @@ public class Encoders_For_Rotation extends LinearOpMode
             //This updates the gyroscope, and lets us see the current angle.
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
             int currentAngle = (int) Math.round(angles.firstAngle * 2000 / 90);
+            currentAngle = Math.abs(currentAngle);
             int distanceToturn = encoderRotation - currentAngle;
 
             //This code simply turns the robot until it reaches a desired angle, by comparing current angle to the one we want.
