@@ -4,15 +4,14 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
-@Autonomous(name="Path Maker", group="Test")
-public class Autonomous_Path_Maker extends LinearOpMode
+@Autonomous(name="Rotation With Encoders", group="Test")
+public class RotationWithEncoders extends LinearOpMode
 {
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
@@ -47,17 +46,11 @@ public class Autonomous_Path_Maker extends LinearOpMode
 
         while(opModeIsActive()) {
 
-            moveToTarget(-0.5, 0.5, 0.5);
-            moveToTarget(-0.5, 0.5, -0.5);
-            moveToTarget(0.5, 0.5, 0.5);
-            moveToTarget(0.5, 0.5, -0.5);
-
-            rotateToAngle(0);
+            rotationEncoder(2000, 0.2);
 
             stop();
 
         }
-
           }
 
 
@@ -146,7 +139,6 @@ public class Autonomous_Path_Maker extends LinearOpMode
 
         boolean isDone = false;
         double desiredAngle = angle;
-
         while(!isDone){
 
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
@@ -262,5 +254,52 @@ public class Autonomous_Path_Maker extends LinearOpMode
         rightDrive.setPower(0);
         BleftDrive.setPower(0);
         BrightDrive.setPower(0);
+    }
+    public void rotationEncoder(int desiredEncoder, double desiredSpeed){
+
+        leftDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightDrive.setDirection(DcMotor.Direction.FORWARD);
+        BleftDrive.setDirection(DcMotor.Direction.FORWARD);
+        BrightDrive.setDirection(DcMotor.Direction.FORWARD);
+
+        leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        BleftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        BrightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        BleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        BrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        leftDrive.setTargetPosition(desiredEncoder);
+        rightDrive.setTargetPosition(desiredEncoder);
+        BleftDrive.setTargetPosition(desiredEncoder);
+        BrightDrive.setTargetPosition(desiredEncoder);
+
+        leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        BleftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        BrightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        leftDrive.setPower(desiredSpeed);
+        rightDrive.setPower(desiredSpeed);
+        BleftDrive.setPower(desiredSpeed);
+        BrightDrive.setPower(desiredSpeed);
+
+        while(leftDrive.isBusy() || rightDrive.isBusy() || BleftDrive.isBusy() || BrightDrive.isBusy()){
+            telemetry.addData("Encoder Count", leftDrive.getCurrentPosition());
+            telemetry.update();
+        }
+
+        leftDrive.setPower(0);
+        rightDrive.setPower(0);
+        BleftDrive.setPower(0);
+        BrightDrive.setPower(0);
+
+        leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        BleftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        BrightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 }
