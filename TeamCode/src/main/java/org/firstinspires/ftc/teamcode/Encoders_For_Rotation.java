@@ -45,11 +45,12 @@ public class Encoders_For_Rotation extends LinearOpMode
         while(opModeIsActive()) {
 
             //Put Movement Here
+            moveToTarget(-0.5, 0.5, 0.5);
+            moveToTarget(-0.5, 0.5, -0.5);
             moveToTarget(0.5, 0.5, 0.5);
+            moveToTarget(0.5, 0.5, -0.5);
 
             //This makes the robot set itself back up nicely once the code is finished.
-            rotateToAngle(0);
-
             stop();
 
         }
@@ -127,11 +128,13 @@ public class Encoders_For_Rotation extends LinearOpMode
             if (!targetLocked) {
                 if (goRight){
                     wheelsTurnRight();
-                    encoderDrive(distanceToturn, 0.25);
+                    encoderDrive(distanceToturn, 0.3);
+                    targetLocked = true;
                 }
                 if (!goRight){
                     wheelsTurnLeft();
-                    encoderDrive(distanceToturn, 0.25);
+                    encoderDrive(distanceToturn, 0.3);
+                    targetLocked = true;
                 }
 
             }
@@ -147,7 +150,7 @@ public class Encoders_For_Rotation extends LinearOpMode
                     wheelsForward();
                 }
 
-                //encoderDrive(encoderDistance, desiredSpeed);
+                encoderDrive(encoderDistance, desiredSpeed);
 
                 //Breaks the loop by setting complete to true.
                 complete = true;
