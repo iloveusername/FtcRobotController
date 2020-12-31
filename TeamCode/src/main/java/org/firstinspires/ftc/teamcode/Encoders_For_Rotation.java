@@ -55,6 +55,8 @@ public class Encoders_For_Rotation extends LinearOpMode
             moveToTarget(0.5, 0.5, -0.5);
             moveToTarget(0, 0.5, 0.5);
             moveToTarget(0, 0.5, -0.5);
+            moveToTarget(0.5, 0, 0.5);
+            moveToTarget(0.5, 0, -0.5);
 
             //This makes the robot set itself back up nicely once the code is finished.
             stop();
@@ -84,24 +86,6 @@ public class Encoders_For_Rotation extends LinearOpMode
         double angleMath = Math.atan(angleTan) * 180/3.14;
         double angle = angleMath;
 
-        //Logic For Rotation.
-        if(angle > 0){
-            goRight = true;
-        }
-        if(angle < 0){
-            goRight = false;
-        }
-
-        //Diving by 0 gives us a number that doesn't exist, this checks for that and acts accordingly. The only cases where this happens are straight up or straight down, so based on the target Y value, we set the angle to either one.
-        if(angle != angle){
-            if(targetY > 0){
-                angle = -90;
-            }
-            if(targetY < 0){
-                angle = 90;
-            }
-        }
-
         //Outlying Conditions For Math Or Something, I don't know, I just want working code.
         if(targetX == 0){
             if(targetY != 0){
@@ -113,6 +97,44 @@ public class Encoders_For_Rotation extends LinearOpMode
                 }
             }
         }
+        if(targetY == 0){
+            if(targetX != 0){
+                if(targetX > 0){
+                    angle = 90;
+                }
+                if(targetX < 0){
+                    angle = -90;
+                }
+            }
+        }
+
+        //Logic For Rotation.
+        if(angle > 0){
+            goRight = true;
+        }
+        if(angle < 0){
+            goRight = false;
+        }
+        if(angle == 0){
+            if(currentAngle > 0){
+                goRight = false;
+            }
+            if(currentAngle < 0){
+                goRight = true;
+            }
+        }
+
+//        //Diving by 0 gives us a number that doesn't exist, this checks for that and acts accordingly. The only cases where this happens are straight up or straight down, so based on the target Y value, we set the angle to either one.
+//        if(angle != angle){
+//            if(targetY > 0){
+//                angle = -90;
+//            }
+//            if(targetY < 0){
+//                angle = 90;
+//            }
+//        }
+
+
         telemetry.addData("Angle", angle);
         telemetry.update();
 
@@ -151,12 +173,12 @@ public class Encoders_For_Rotation extends LinearOpMode
             if (!targetLocked) {
                 if (goRight){
                     wheelsTurnRight();
-                    encoderDrive(distanceToturn, 0.3);
+                    encoderDrive(distanceToturn, 0.5);
                     targetLocked = true;
                 }
                 if (!goRight){
                     wheelsTurnLeft();
-                    encoderDrive(distanceToturn, 0.3);
+                    encoderDrive(distanceToturn, 0.5);
                     targetLocked = true;
                 }
 
