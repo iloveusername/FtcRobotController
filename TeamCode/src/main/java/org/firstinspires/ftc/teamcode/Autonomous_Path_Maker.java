@@ -11,7 +11,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
-@Autonomous(name="Path Maker", group="Test")
+@Autonomous(name="Path Maker", group="Tools")
 public class Autonomous_Path_Maker extends LinearOpMode
 {
     private DcMotor leftDrive = null;
@@ -19,17 +19,14 @@ public class Autonomous_Path_Maker extends LinearOpMode
     private DcMotor BleftDrive = null;
     private DcMotor BrightDrive = null;
 
+    //This is the onboard gyroscope, pretty neat.
     BNO055IMU imu;
     Orientation angles;
 
-
-
-
-    /*
-     * Code to run ONCE when the driver hits INIT
-     */
     @Override
     public void runOpMode()  {
+
+        //This sets up the gryoscope for use.
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         parameters.calibrationDataFile = "BNO055IMUCalibration.json";
@@ -47,11 +44,13 @@ public class Autonomous_Path_Maker extends LinearOpMode
 
         while(opModeIsActive()) {
 
+            //Put Movement Here
             moveToTarget(-0.5, 0.5, 0.5);
             moveToTarget(-0.5, 0.5, -0.5);
             moveToTarget(0.5, 0.5, 0.5);
             moveToTarget(0.5, 0.5, -0.5);
 
+            //This makes the robot set itself back up nicely once the code is finished.
             rotateToAngle(0);
 
             stop();
@@ -59,8 +58,6 @@ public class Autonomous_Path_Maker extends LinearOpMode
         }
 
           }
-
-
 
     /* Valued Information:
     Encoder Value For One Rotation: 537.6
@@ -70,17 +67,20 @@ public class Autonomous_Path_Maker extends LinearOpMode
 
     public void moveToTarget(double targetX, double targetY, double desiredSpeed){
 
+        //This chunk of code takes the target X and Y values, gives us a hypotenuse and angle.
         double hypotenuse = Math.sqrt(targetX * targetX + targetY * targetY);
         double angleTan = (targetY/targetX);
         double angleMath = Math.atan(angleTan) * 180/3.14;
         double angle = angleMath - (90 * targetX/Math.abs(targetX));
-        double persistantRotation = 0;
+
+        //Sees if we gave it a negative speed, allows us to go backwards.
         boolean goBack = false;
         if(desiredSpeed < 0){
             goBack = true;
             desiredSpeed = Math.abs(desiredSpeed);
         }
 
+        //Diving by 0 gives us a number that doesn't exist, this checks for that and acts accordingly. The only cases where this happens are straight up or straight down, so based on the target Y value, we set the angle to either one.
         if(angle != angle){
             if(targetY > 0){
                 angle = 0;
@@ -92,17 +92,23 @@ public class Autonomous_Path_Maker extends LinearOpMode
 
         boolean complete = false;
 
+        //This is to check for dividing by 0 once more, it'll set the hypotenuse to whatever the targetY value is. Since we only divide by 0 for vertical lines, whatever the target Y value is will be the hypotenuse.
         if(hypotenuse != hypotenuse){
             hypotenuse = Math.abs(targetY);
         }
+
+        //Multiplies the hypotenuse value by the length of one meter in encoder values.
         int encoderDistance = (int) Math.round(hypotenuse * 1620);
 
         boolean targetLocked = false;
 
+        //Makes sure the program doesn't skip to the next part without completing the encoder stuff.
         while(!complete) {
 
+            //This updates the gyroscope, and lets us see the current angle.
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
+            //This code simply turns the robot until it reaches a desired angle, by comparing current angle to the one we want.
             if (!targetLocked) {
                 if (angles.firstAngle > angle) {
                     wheelsTurn();
@@ -121,14 +127,20 @@ public class Autonomous_Path_Maker extends LinearOpMode
                 }
             }
 
+            //Once at a target angle, the robot will switch to encoders and travel the distance of the hypotenuse.
             if (targetLocked) {
+
+                //Logic for going forwards or backwards.
                 if(goBack){
                     wheelsBackwards();
                 }
                 if(!goBack){
                     wheelsForward();
                 }
+
                 encoderDrive(encoderDistance, desiredSpeed);
+
+                //Breaks the loop by setting complete to true.
                 complete = true;
                 telemetry.addData("Complete", "Complete");
                 telemetry.update();
@@ -141,11 +153,9 @@ public class Autonomous_Path_Maker extends LinearOpMode
             telemetry.addData("Target Locked?", targetLocked);
             telemetry.update();
         }
-        persistantRotation = persistantRotation + angle;
-        telemetry.addData("Persistant Rotation", persistantRotation);
-        telemetry.update();
     }
 
+    //This is just the previous part of the code but with just the rotation parts. Allows rotation without movement, simply input an angle in degrees. Radians are for sinners.
     public void rotateToAngle(double angle){
 
         boolean isDone = false;
@@ -175,6 +185,8 @@ public class Autonomous_Path_Maker extends LinearOpMode
 
     }
 
+
+    //Standard encoder stuff. Nothing cool here.
     public void encoderDrive(int desiredEncoder, double desiredSpeed){
         leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -215,6 +227,7 @@ public class Autonomous_Path_Maker extends LinearOpMode
         BrightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
+    //Direction stuff for directional things.
     public void wheelsForward(){
         leftDrive.setDirection(DcMotor.Direction.FORWARD);
         rightDrive.setDirection(DcMotor.Direction.REVERSE);
@@ -229,6 +242,7 @@ public class Autonomous_Path_Maker extends LinearOpMode
         BrightDrive.setDirection(DcMotor.Direction.FORWARD);
     }
 
+    //Wooooah it goes sideways. We really are in the future.
     public void wheelsSideways(){
         leftDrive.setDirection(DcMotor.Direction.REVERSE);
         rightDrive.setDirection(DcMotor.Direction.FORWARD);
@@ -243,6 +257,7 @@ public class Autonomous_Path_Maker extends LinearOpMode
         BrightDrive.setDirection(DcMotor.Direction.FORWARD);
     }
 
+    //Weeeeeeeeee.
     public void wheelsSpin(double speed){
         leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -255,6 +270,8 @@ public class Autonomous_Path_Maker extends LinearOpMode
         BrightDrive.setPower(speed);
 
     }
+
+    //Stop wheels function makes the wheels stop. What more could you ask for?
     public void wheelsStop(){
 
         leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
