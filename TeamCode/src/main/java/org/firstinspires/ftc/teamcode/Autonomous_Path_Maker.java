@@ -119,6 +119,7 @@ public class Autonomous_Path_Maker extends LinearOpMode
                     targetLocked = true;
                 }
             }
+
             if (targetLocked) {
                 if(goBack){
                     wheelsBackwards();
