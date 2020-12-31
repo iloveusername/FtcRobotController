@@ -4,6 +4,7 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
@@ -44,7 +45,7 @@ public class Encoders_For_Rotation extends LinearOpMode
         while(opModeIsActive()) {
 
             //Put Movement Here
-            moveToTarget(0.5, 0, 0.5);
+            moveToTarget(0.5, 0.5, 0.5);
 
             //This makes the robot set itself back up nicely once the code is finished.
             rotateToAngle(0);
@@ -63,11 +64,24 @@ public class Encoders_For_Rotation extends LinearOpMode
 
     public void moveToTarget(double targetX, double targetY, double desiredSpeed){
 
+        //Sets up a boolean for if the rotation section goes left or right.
+        boolean goRight = true;
+
         //This chunk of code takes the target X and Y values, gives us a hypotenuse and angle.
         double hypotenuse = Math.sqrt(targetX * targetX + targetY * targetY);
         double angleTan = (targetY/targetX);
         double angleMath = Math.atan(angleTan) * 180/3.14;
         double angle = angleMath - (90 * targetX/Math.abs(targetX));
+
+        //Logic For Rotation.
+        if(angle > 0){
+            goRight = true;
+        }
+        if(angle < 0){
+            goRight = false;
+            angle = Math.abs(angle);
+        }
+
 
         //Encoder Stuff For Encoder People.
         int encoderRotation = (int) Math.round(angle * 2000 / 90);
@@ -107,10 +121,18 @@ public class Encoders_For_Rotation extends LinearOpMode
             //This updates the gyroscope, and lets us see the current angle.
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
             int currentAngle = (int) Math.round(angles.firstAngle * 2000 / 90);
-            int distandToturn = encoderDistance - currentAngle;
+            int distanceToturn = encoderRotation - currentAngle;
 
             //This code simply turns the robot until it reaches a desired angle, by comparing current angle to the one we want.
             if (!targetLocked) {
+                if (goRight){
+                    wheelsTurnRight();
+                    encoderDrive(distanceToturn, 0.25);
+                }
+                if (!goRight){
+                    wheelsTurnLeft();
+                    encoderDrive(distanceToturn, 0.25);
+                }
 
             }
 
@@ -134,13 +156,14 @@ public class Encoders_For_Rotation extends LinearOpMode
             }
 
             /*telemetry.addData("Hypotenuse", hypotenuse);
-            telemetry.addData("Angle", angle);
             telemetry.addData("Distance Needed", encoderDistance);
             telemetry.addData("Target Locked?", targetLocked);*/
             telemetry.addData("Rotation In Encoder", encoderRotation);
             telemetry.addData("Heading", angles.firstAngle);
             telemetry.addData("Current Angle In Encoders", currentAngle);
-            telemetry.addData("Distance To Turn In Encoders", distandToturn);
+            telemetry.addData("Distance To Turn In Encoders", distanceToturn);
+            telemetry.addData("Angle", angle);
+            telemetry.addData("Go Right?", goRight);
             telemetry.update();
         }
     }
@@ -245,6 +268,20 @@ public class Encoders_For_Rotation extends LinearOpMode
         rightDrive.setDirection(DcMotor.Direction.FORWARD);
         BleftDrive.setDirection(DcMotor.Direction.FORWARD);
         BrightDrive.setDirection(DcMotor.Direction.FORWARD);
+    }
+
+    public void wheelsTurnRight(){
+        leftDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightDrive.setDirection(DcMotor.Direction.FORWARD);
+        BleftDrive.setDirection(DcMotor.Direction.FORWARD);
+        BrightDrive.setDirection(DcMotor.Direction.FORWARD);
+    }
+
+    public void wheelsTurnLeft(){
+        leftDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightDrive.setDirection(DcMotor.Direction.REVERSE);
+        BleftDrive.setDirection(DcMotor.Direction.REVERSE);
+        BrightDrive.setDirection(DcMotor.Direction.REVERSE);
     }
 
     //Weeeeeeeeee.
