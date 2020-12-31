@@ -102,11 +102,12 @@ public class Encoders_For_Rotation extends LinearOpMode
         boolean targetLocked = false;
 
         //Makes sure the program doesn't skip to the next part without completing the encoder stuff.
-        while(!complete) {
+        while(!complete && opModeIsActive()) {
 
             //This updates the gyroscope, and lets us see the current angle.
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-            int currentAngle = (int) Math.round(angles.firstAngle);
+            int currentAngle = (int) Math.round(angles.firstAngle * 2000 / 90);
+            int distandToturn = encoderDistance - currentAngle;
 
             //This code simply turns the robot until it reaches a desired angle, by comparing current angle to the one we want.
             if (!targetLocked) {
@@ -132,11 +133,14 @@ public class Encoders_For_Rotation extends LinearOpMode
                 telemetry.update();
             }
 
-            telemetry.addData("Hypotenuse", hypotenuse);
+            /*telemetry.addData("Hypotenuse", hypotenuse);
             telemetry.addData("Angle", angle);
-            telemetry.addData("Heading", angles.firstAngle);
             telemetry.addData("Distance Needed", encoderDistance);
-            telemetry.addData("Target Locked?", targetLocked);
+            telemetry.addData("Target Locked?", targetLocked);*/
+            telemetry.addData("Rotation In Encoder", encoderRotation);
+            telemetry.addData("Heading", angles.firstAngle);
+            telemetry.addData("Current Angle In Encoders", currentAngle);
+            telemetry.addData("Distance To Turn In Encoders", distandToturn);
             telemetry.update();
         }
     }
@@ -147,7 +151,7 @@ public class Encoders_For_Rotation extends LinearOpMode
         boolean isDone = false;
         double desiredAngle = angle;
 
-        while(!isDone){
+        while(!isDone && opModeIsActive()){
 
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
