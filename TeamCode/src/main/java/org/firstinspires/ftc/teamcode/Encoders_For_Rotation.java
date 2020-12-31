@@ -44,10 +44,7 @@ public class Encoders_For_Rotation extends LinearOpMode
         while(opModeIsActive()) {
 
             //Put Movement Here
-            moveToTarget(-0.5, 0.5, 0.5);
-            moveToTarget(-0.5, 0.5, -0.5);
-            moveToTarget(0.5, 0.5, 0.5);
-            moveToTarget(0.5, 0.5, -0.5);
+            moveToTarget(0.5, 0, 0.5);
 
             //This makes the robot set itself back up nicely once the code is finished.
             rotateToAngle(0);
@@ -72,6 +69,9 @@ public class Encoders_For_Rotation extends LinearOpMode
         double angleMath = Math.atan(angleTan) * 180/3.14;
         double angle = angleMath - (90 * targetX/Math.abs(targetX));
 
+        //Encoder Stuff For Encoder People.
+        int encoderRotation = (int) Math.round(angle * 2000 / 90);
+
         //Sees if we gave it a negative speed, allows us to go backwards.
         boolean goBack = false;
         if(desiredSpeed < 0){
@@ -91,7 +91,7 @@ public class Encoders_For_Rotation extends LinearOpMode
 
         boolean complete = false;
 
-        //This is to check for dividing by 0 once more, it'll set the hypotenuse to whatever the targetY value is. Since we only divide by 0 for vertical lines, whatever the target Y value is will be the hypotenuse.
+        //This is to check for dividing by 0 once more, it'll set the hypotenuse to whatever the target Y value is. Since we only divide by 0 for vertical lines, whatever the target Y value is will be the hypotenuse.
         if(hypotenuse != hypotenuse){
             hypotenuse = Math.abs(targetY);
         }
@@ -106,22 +106,11 @@ public class Encoders_For_Rotation extends LinearOpMode
 
             //This updates the gyroscope, and lets us see the current angle.
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            int currentAngle = (int) Math.round(angles.firstAngle);
 
             //This code simply turns the robot until it reaches a desired angle, by comparing current angle to the one we want.
             if (!targetLocked) {
-                if (angles.firstAngle > angle) {
 
-                    telemetry.update();
-                }
-
-                if (angles.firstAngle < angle) {
-
-                    telemetry.update();
-                }
-
-                if (angles.firstAngle < angle + 1 && angles.firstAngle > angle - 1) {
-                    targetLocked = true;
-                }
             }
 
             //Once at the target angle, the robot will switch to encoders and travel the distance of the hypotenuse.
@@ -135,7 +124,7 @@ public class Encoders_For_Rotation extends LinearOpMode
                     wheelsForward();
                 }
 
-                encoderDrive(encoderDistance, desiredSpeed);
+                //encoderDrive(encoderDistance, desiredSpeed);
 
                 //Breaks the loop by setting complete to true.
                 complete = true;
@@ -280,4 +269,5 @@ public class Encoders_For_Rotation extends LinearOpMode
         BleftDrive.setPower(0);
         BrightDrive.setPower(0);
     }
+
 }

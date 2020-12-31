@@ -92,7 +92,7 @@ public class Autonomous_Path_Maker extends LinearOpMode
 
         boolean complete = false;
 
-        //This is to check for dividing by 0 once more, it'll set the hypotenuse to whatever the targetY value is. Since we only divide by 0 for vertical lines, whatever the target Y value is will be the hypotenuse.
+        //This is to check for dividing by 0 once more, it'll set the hypotenuse to whatever the target Y value is. Since we only divide by 0 for vertical lines, whatever the target Y value is will be the hypotenuse.
         if(hypotenuse != hypotenuse){
             hypotenuse = Math.abs(targetY);
         }
