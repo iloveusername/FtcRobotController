@@ -29,29 +29,26 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import static java.lang.Thread.sleep;
+import org.firstinspires.ftc.robotcore.external.Func;
+import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 
-/**
- * This file contains an example of an iterative (Non-Linear) "OpMode".
- * An OpMode is a 'program' that runs in either the autonomous or the teleop period of an FTC match.
- * The names of OpModes appear on the menu of the FTC Driver Station.
- * When an selection is made from the menu, the corresponding OpMode
- * class is instantiated on the Robot Controller and executed.
- *
- * This particular OpMode just executes a basic Tank Drive Teleop for a two wheeled robot
- * It includes all the skeletal structure that all iterative OpModes contain.
- *
- * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
- */
+import static java.lang.Thread.sleep;
 
 @Autonomous(name="Test_Program", group="Test")
 public class Test_Program extends LinearOpMode
@@ -63,6 +60,10 @@ public class Test_Program extends LinearOpMode
     private DcMotor BleftDrive = null;
     private DcMotor BrightDrive = null;
 
+    BNO055IMU imu;
+    Orientation angles;
+
+
 
 
     /*
@@ -70,8 +71,15 @@ public class Test_Program extends LinearOpMode
      */
     @Override
     public void runOpMode()  {
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
+        parameters.calibrationDataFile = "BNO055IMUCalibration.json";
+
+
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        imu.initialize(parameters);
+
         waitForStart();
-        telemetry.addData("Status", "Initialized");
 
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
@@ -81,28 +89,25 @@ public class Test_Program extends LinearOpMode
         BleftDrive  = hardwareMap.get(DcMotor.class, "BL");
         BrightDrive = hardwareMap.get(DcMotor.class, "BR");
 
-        //This lets the motors run without encoders active, go figure
-        leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        BleftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        BrightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-
-        // Most robots need the motor on one side to be reversed to drive forward
-        // Reverse the motor that runs backwards when connected directly to the battery
-        leftDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightDrive.setDirection(DcMotor.Direction.REVERSE);
-        BleftDrive.setDirection(DcMotor.Direction.FORWARD);
-        BrightDrive.setDirection(DcMotor.Direction.REVERSE);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
 
         while(opModeIsActive()) {
-            letsMove(0.25);
-            sleep(500);
-            letsMove(-0.25);
-            sleep(500);
+
+            moveToTarget(2,12,0.5);
+            sleep(1000);
+            moveToTarget(4,4,0.5);
+            sleep(1000);
+
+            /*
+            wheelsForward();
+            encoderTest(1620, 0.5);
+            encoderTest(-1620, 0.5);
+            wheelsSideways();
+            encoderTest(-1620,0.5);
+            encoderTest(-1620, 0.5);
+            */
         }
 
           }
@@ -110,6 +115,11 @@ public class Test_Program extends LinearOpMode
 
 
     public void letsMove(double speedVar){
+        leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        BleftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        BrightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
         double leftPower;
         double rightPower;
         double BleftPower;
@@ -132,19 +142,73 @@ public class Test_Program extends LinearOpMode
     /* Valued Information:
     Encoder Value For One Rotation: 537.6
     Wheel Circumference: 0.32 Meters
+    1 Meter In Encoder Values: 1620
      */
-    public void moveToTarget(int targetX, int targetY, int desiredSpeed){
+    public void moveToTarget(double targetX, double targetY, double desiredSpeed){
+        wheelsForward();
+        angles   = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        double hypotenuse = Math.sqrt(targetX * targetX + targetY * targetY);
+        double angleTan = (targetY/targetX);
+        double angle = Math.atan(angleTan)*180/3.14;
 
-        boolean isVerticle = false;
-        boolean isHorizontal = false;
+        
 
-        if(targetX == 0 && targetY != 0){
-            isVerticle = true;
-        }
-        if(targetX != 0 && targetY == 0){
-            isHorizontal = true;
-        }
+
+
+        telemetry.addData("Hypotenuse", hypotenuse);
+        telemetry.addData("Angle", angle);
+        telemetry.addData("Heading", angles.firstAngle);
+        telemetry.update();
 
     }
 
+    public void encoderTest(int desiredEnocder, double desiredSpeed){
+        leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        BleftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        BrightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        BleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        BrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        leftDrive.setTargetPosition(desiredEnocder);
+        rightDrive.setTargetPosition(desiredEnocder);
+        BleftDrive.setTargetPosition(desiredEnocder);
+        BrightDrive.setTargetPosition(desiredEnocder);
+
+        leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        BleftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        BrightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        leftDrive.setPower(desiredSpeed);
+        rightDrive.setPower(desiredSpeed);
+        BleftDrive.setPower(desiredSpeed);
+        BrightDrive.setPower(desiredSpeed);
+
+        while(leftDrive.isBusy()){
+        }
+
+        leftDrive.setPower(0);
+        rightDrive.setPower(0);
+        BleftDrive.setPower(0);
+        BrightDrive.setPower(0);
+
+    }
+
+    public void wheelsForward(){
+        leftDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightDrive.setDirection(DcMotor.Direction.REVERSE);
+        BleftDrive.setDirection(DcMotor.Direction.FORWARD);
+        BrightDrive.setDirection(DcMotor.Direction.REVERSE);
+    }
+
+    public void wheelsSideways(){
+        leftDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightDrive.setDirection(DcMotor.Direction.FORWARD);
+        BleftDrive.setDirection(DcMotor.Direction.FORWARD);
+        BrightDrive.setDirection(DcMotor.Direction.REVERSE);
+    }
 }
