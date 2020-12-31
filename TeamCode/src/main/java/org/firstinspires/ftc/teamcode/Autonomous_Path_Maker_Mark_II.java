@@ -53,7 +53,7 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
             moveToTarget(-0.5, 0, 0.5);
             moveToTarget(0, 0.5, 0.5);
             moveToTarget(0.5, 0, 0.5);
-            moveToTarget(0, -0.5, 0.5);
+            moveToTargetWithOdometry(0, 0, 0.5);
 
             rotateToAngle(0);
 
@@ -346,10 +346,14 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
         BrightDrive.setPower(0);
     }
 
-    public void moveToTargetWithOdometry(double targetX, double targetY, double desiredSpeed){
+    public void moveToTargetWithOdometry(double enterX, double enterY, double desiredSpeed){
 
         //Sets up a boolean for if the rotation section goes left or right.
         boolean goRight = true;
+
+        //Odometry Stuff Once More, this chunk allows the robot to find a coordinate on the field and take the shortest path there.
+        double targetX = enterX - currentX;
+        double targetY = enterY - currentY;
 
         //This chunk of code takes the target X and Y values, gives us a hypotenuse and angle.
         double hypotenuse = Math.sqrt(targetX * targetX + targetY * targetY);
@@ -459,8 +463,8 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
 
                 //Basically Odometry Stuff.
                 currentAngle = encoderRotation;
-                currentX += targetX;
-                currentY += targetY;
+                currentX += enterX;
+                currentY += enterY;
 
 
                 //Breaks the loop by setting complete to true.
