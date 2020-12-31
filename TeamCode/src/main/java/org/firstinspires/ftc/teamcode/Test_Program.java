@@ -150,8 +150,22 @@ public class Test_Program extends LinearOpMode
         double hypotenuse = Math.sqrt(targetX * targetX + targetY * targetY);
         double angleTan = (targetY/targetX);
         double angle = Math.atan(angleTan)*180/3.14;
+        boolean targetLocked = false;
 
-        
+        if(!targetLocked){
+            if(angle > angles.firstAngle){
+                wheelsTurn();
+                wheelsSpin(0.2);
+            }
+            if(angle < angles.firstAngle){
+                wheelsTurn();
+                wheelsSpin(-0.2);
+            }
+            if(angle > angles.firstAngle-10 && angle < angles.firstAngle+10){
+                wheelsStop();
+                wheelsForward();
+            }
+        }
 
 
 
@@ -210,5 +224,37 @@ public class Test_Program extends LinearOpMode
         rightDrive.setDirection(DcMotor.Direction.FORWARD);
         BleftDrive.setDirection(DcMotor.Direction.FORWARD);
         BrightDrive.setDirection(DcMotor.Direction.REVERSE);
+    }
+
+    public void wheelsTurn(){
+        leftDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightDrive.setDirection(DcMotor.Direction.FORWARD);
+        BleftDrive.setDirection(DcMotor.Direction.FORWARD);
+        BrightDrive.setDirection(DcMotor.Direction.FORWARD);
+    }
+
+    public void wheelsSpin(double speed){
+        leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        BleftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        BrightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        leftDrive.setPower(speed);
+        rightDrive.setPower(speed);
+        BleftDrive.setPower(speed);
+        BrightDrive.setPower(speed);
+
+    }
+    public void wheelsStop(){
+
+        leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        BleftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        BrightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        leftDrive.setPower(0);
+        rightDrive.setPower(0);
+        BleftDrive.setPower(0);
+        BrightDrive.setPower(0);
     }
 }
