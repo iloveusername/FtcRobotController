@@ -19,6 +19,9 @@ public class Encoders_For_Rotation extends LinearOpMode
     private DcMotor BleftDrive = null;
     private DcMotor BrightDrive = null;
 
+    //This is a ratio for ratio things. About 2000 Encoder Ticks to a 90 Degree Turn. Default is 22, Adjust to deal with encoder loss if needed.
+    static final double rotToEncoder = 22.5;
+
     //This is the onboard gyroscope, pretty neat.
     BNO055IMU imu;
     Orientation angles;
@@ -49,14 +52,12 @@ public class Encoders_For_Rotation extends LinearOpMode
         while(opModeIsActive()) {
 
             //Put Movement Here
-            moveToTarget(-0.5, 0.5, 0.5);
-            moveToTarget(-0.5, 0.5, -0.5);
-            moveToTarget(0.5, 0.5, 0.5);
-            moveToTarget(0.5, 0.5, -0.5);
+            moveToTarget(-0.5, 0, 0.5);
             moveToTarget(0, 0.5, 0.5);
-            moveToTarget(0, 0.5, -0.5);
             moveToTarget(0.5, 0, 0.5);
-            moveToTarget(0.5, 0, -0.5);
+            moveToTarget(0, -0.5, 0.5);
+
+            rotateToAngle(0);
 
             //This makes the robot set itself back up nicely once the code is finished.
             stop();
@@ -124,22 +125,11 @@ public class Encoders_For_Rotation extends LinearOpMode
             }
         }
 
-//        //Diving by 0 gives us a number that doesn't exist, this checks for that and acts accordingly. The only cases where this happens are straight up or straight down, so based on the target Y value, we set the angle to either one.
-//        if(angle != angle){
-//            if(targetY > 0){
-//                angle = -90;
-//            }
-//            if(targetY < 0){
-//                angle = 90;
-//            }
-//        }
-
-
         telemetry.addData("Angle", angle);
         telemetry.update();
 
         //Encoder Stuff For Encoder People.
-        int encoderRotation = (int) Math.round(angle * 2000 / 90);
+        int encoderRotation = (int) Math.round(angle * rotToEncoder);
 
         //Sees if we gave it a negative speed, allows us to go backwards.
         boolean goBack = false;
@@ -202,16 +192,6 @@ public class Encoders_For_Rotation extends LinearOpMode
                 complete = true;
                 telemetry.update();
             }
-
-//            telemetry.addData("Hypotenuse", hypotenuse);
-//            telemetry.addData("Distance Needed", encoderDistance);
-//            telemetry.addData("Target Locked?", targetLocked);
-//            telemetry.addData("Rotation In Encoder", encoderRotation);
-//            telemetry.addData("Heading", angles.firstAngle);
-//            telemetry.addData("Current Angle In Encoders", currentAngle);
-//            telemetry.addData("Distance To Turn In Encoders", distanceToturn);
-//            telemetry.addData("Angle", angle);
-//            telemetry.addData("Go Right?", goRight);
             telemetry.addData("Current Rotation", currentAngle/2000*90);
             telemetry.addData("Target Rotation", encoderRotation/2000*90);
             telemetry.addData("Distance To Rotate", distanceToturn);
@@ -223,25 +203,25 @@ public class Encoders_For_Rotation extends LinearOpMode
     public void rotateToAngle(double angle){
 
         boolean isDone = false;
-        double desiredAngle = angle;
+        boolean goRight = true;
+        int encoderRotation = (int) Math.round(angle*rotToEncoder);
+        int distanceToturn = Math.abs(encoderRotation - currentAngle);
+        if(angle > 0){
+            goRight = true;
+        }
+        if(angle < 0){
+            goRight = false;
+        }
 
         while(!isDone && opModeIsActive()){
-
-            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-
-            if (angles.firstAngle > desiredAngle) {
-                wheelsTurn();
-                wheelsSpin(0.5);
-                telemetry.update();
+            if (goRight){
+                wheelsTurnRight();
+                encoderDrive(distanceToturn, 0.5);
+                isDone = true;
             }
-
-            if (angles.firstAngle < desiredAngle) {
-                wheelsTurn();
-                wheelsSpin(-0.5);
-                telemetry.update();
-            }
-
-            if (angles.firstAngle < desiredAngle + 1 && angles.firstAngle > desiredAngle - 1) {
+            if (!goRight){
+                wheelsTurnLeft();
+                encoderDrive(distanceToturn, 0.5);
                 isDone = true;
             }
 
