@@ -1,8 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -10,8 +10,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
-@Autonomous(name="Test_Program", group="Test")
-public class Test_Program extends LinearOpMode
+@Autonomous(name="Path Maker", group="Test")
+public class Autonomous_Path_Maker extends LinearOpMode
 {
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
@@ -69,17 +69,20 @@ public class Test_Program extends LinearOpMode
 
         double hypotenuse = Math.sqrt(targetX * targetX + targetY * targetY);
         double angleTan = (targetY/targetX);
-        double angleMath = Math.atan(angleTan)*180/3.14;
+        double angleMath = Math.atan(angleTan) * 180/3.14;
         double angle = angleMath - (90 * targetX/Math.abs(targetX));
         if(angle != angle){
+            if(targetY > 0){
+                angle = 0;
+            }
+            if(targetY < 0){
+                angle = 180;
+            }
 
         }
-
         boolean complete = false;
-
         if(hypotenuse != hypotenuse){
-            hypotenuse = targetY;
-        }
+            hypotenuse = Math.abs(targetY);}
         int encoderDistance = (int) Math.round(hypotenuse * 1620);
 
         boolean targetLocked = false;
