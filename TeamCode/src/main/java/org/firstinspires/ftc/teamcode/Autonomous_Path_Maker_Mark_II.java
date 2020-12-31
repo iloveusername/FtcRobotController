@@ -11,8 +11,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
-@Autonomous(name="Enocder Rotation", group="Tools")
-public class Encoders_For_Rotation extends LinearOpMode
+@Autonomous(name="Autonomous Path Maker Mark II", group="Tools")
+public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
 {
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
