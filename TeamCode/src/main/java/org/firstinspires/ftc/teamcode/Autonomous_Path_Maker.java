@@ -46,10 +46,10 @@ public class Autonomous_Path_Maker extends LinearOpMode
 
         while(opModeIsActive()) {
 
-            moveToTarget(-0.5,0,0.5);
-            moveToTarget(0.5, 0, 0.5);
-            moveToTarget(0, 0.5, 0.5);
-            moveToTarget(0, -0.5, 0.5);
+            moveToTarget(-0.5, 0.5, 0.5);
+            moveToTarget(-0.5, 0.5, -0.5);
+            moveToTarget(0.5, 0.5, 0.5);
+            moveToTarget(0.5, 0.5, -0.5);
 
             stop();
 
@@ -71,6 +71,7 @@ public class Autonomous_Path_Maker extends LinearOpMode
         double angleTan = (targetY/targetX);
         double angleMath = Math.atan(angleTan) * 180/3.14;
         double angle = angleMath - (90 * targetX/Math.abs(targetX));
+
         if(angle != angle){
             if(targetY > 0){
                 angle = 0;
@@ -78,15 +79,16 @@ public class Autonomous_Path_Maker extends LinearOpMode
             if(targetY < 0){
                 angle = 180;
             }
-
         }
+
         boolean complete = false;
+
         if(hypotenuse != hypotenuse){
-            hypotenuse = Math.abs(targetY);}
+            hypotenuse = Math.abs(targetY);
+        }
         int encoderDistance = (int) Math.round(hypotenuse * 1620);
 
         boolean targetLocked = false;
-
 
         while(!complete) {
 
@@ -98,11 +100,13 @@ public class Autonomous_Path_Maker extends LinearOpMode
                     wheelsSpin(0.5);
                     telemetry.update();
                 }
+
                 if (angles.firstAngle < angle) {
                     wheelsTurn();
                     wheelsSpin(-0.5);
                     telemetry.update();
                 }
+
                 if (angles.firstAngle < angle + 1 && angles.firstAngle > angle - 1) {
                     targetLocked = true;
                 }
