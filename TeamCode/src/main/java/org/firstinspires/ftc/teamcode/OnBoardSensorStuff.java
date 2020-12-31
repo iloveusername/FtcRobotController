@@ -56,6 +56,7 @@ import java.util.Locale;
  * @see <a href="http://www.adafruit.com/products/2472">Adafruit IMU</a>
  */
 @Autonomous(name = "GyroTest") // Comment this out to add to the opmode list
+@Disabled
 public class OnBoardSensorStuff extends LinearOpMode
     {
 

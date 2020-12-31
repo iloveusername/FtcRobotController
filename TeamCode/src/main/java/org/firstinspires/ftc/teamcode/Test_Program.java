@@ -95,47 +95,13 @@ public class Test_Program extends LinearOpMode
 
         while(opModeIsActive()) {
 
-            moveToTarget(2,12,0.5);
-            sleep(1000);
-            moveToTarget(4,4,0.5);
-            sleep(1000);
-
-            /*
-            wheelsForward();
-            encoderTest(1620, 0.5);
-            encoderTest(-1620, 0.5);
-            wheelsSideways();
-            encoderTest(-1620,0.5);
-            encoderTest(-1620, 0.5);
-            */
+            moveToTarget(-0.5,0,0.25);
+            moveToTarget(0.5, 0, 0.75);
+            stop();
+            
         }
 
           }
-
-
-
-    public void letsMove(double speedVar){
-        leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        BleftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        BrightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-        double leftPower;
-        double rightPower;
-        double BleftPower;
-        double BrightPower;
-
-        leftPower = speedVar;
-        rightPower = speedVar;
-        BleftPower = speedVar;
-        BrightPower = speedVar;
-
-        leftDrive.setPower(leftPower);
-        rightDrive.setPower(rightPower);
-        BleftDrive.setPower(BleftPower);
-        BrightDrive.setPower(BrightPower);
-
-    }
 
 
 
@@ -144,39 +110,55 @@ public class Test_Program extends LinearOpMode
     Wheel Circumference: 0.32 Meters
     1 Meter In Encoder Values: 1620
      */
+
     public void moveToTarget(double targetX, double targetY, double desiredSpeed){
-        wheelsForward();
-        angles   = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         double hypotenuse = Math.sqrt(targetX * targetX + targetY * targetY);
         double angleTan = (targetY/targetX);
-        double angle = Math.atan(angleTan)*180/3.14;
-        boolean targetLocked = false;
+        double angleMath = Math.atan(angleTan)*180/3.14;
+        double angle = angleMath - (90 * targetX/Math.abs(targetX));
+        boolean complete = false;
+        int encoderDistance = (int) Math.round(hypotenuse * 1620);
 
-        if(!targetLocked){
-            if(angle > angles.firstAngle){
-                wheelsTurn();
-                wheelsSpin(0.2);
+        boolean targetLocked = false;
+        while(!complete) {
+            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            if (!targetLocked) {
+                if (angles.firstAngle > angle) {
+                    wheelsTurn();
+                    wheelsSpin(0.3);
+                    telemetry.update();
+                }
+                if (angles.firstAngle < angle) {
+                    wheelsTurn();
+                    wheelsSpin(-0.3);
+                    telemetry.update();
+                }
+                if (angles.firstAngle < angle + 1 && angles.firstAngle > angle - 1) {
+                    targetLocked = true;
+                }
             }
-            if(angle < angles.firstAngle){
-                wheelsTurn();
-                wheelsSpin(-0.2);
-            }
-            if(angle > angles.firstAngle-10 && angle < angles.firstAngle+10){
-                wheelsStop();
+            if (targetLocked) {
                 wheelsForward();
+                encoderTest(encoderDistance, desiredSpeed);
+                complete = true;
+                telemetry.addData("Complete", "Complete");
+                telemetry.update();
             }
+
+            telemetry.addData("Hypotenuse", hypotenuse);
+            telemetry.addData("Angle", angle);
+            telemetry.addData("Heading", angles.firstAngle);
+            telemetry.addData("Distance Needed", encoderDistance);
+            telemetry.addData("Target Locked?", targetLocked);
+            telemetry.update();
         }
 
 
 
-        telemetry.addData("Hypotenuse", hypotenuse);
-        telemetry.addData("Angle", angle);
-        telemetry.addData("Heading", angles.firstAngle);
-        telemetry.update();
 
     }
 
-    public void encoderTest(int desiredEnocder, double desiredSpeed){
+    public void encoderTest(int desiredEncoder, double desiredSpeed){
         leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         BleftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -187,10 +169,10 @@ public class Test_Program extends LinearOpMode
         BleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         BrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        leftDrive.setTargetPosition(desiredEnocder);
-        rightDrive.setTargetPosition(desiredEnocder);
-        BleftDrive.setTargetPosition(desiredEnocder);
-        BrightDrive.setTargetPosition(desiredEnocder);
+        leftDrive.setTargetPosition(desiredEncoder);
+        rightDrive.setTargetPosition(desiredEncoder);
+        BleftDrive.setTargetPosition(desiredEncoder);
+        BrightDrive.setTargetPosition(desiredEncoder);
 
         leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -210,6 +192,10 @@ public class Test_Program extends LinearOpMode
         BleftDrive.setPower(0);
         BrightDrive.setPower(0);
 
+        leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        BleftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        BrightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
     public void wheelsForward(){
