@@ -93,6 +93,7 @@ public class TryTwo extends LinearOpMode
         if(hypotenuse != hypotenuse){
             hypotenuse = Math.abs(targetY);
         }
+
         int encoderDistance = (int) Math.round(hypotenuse * 1620);
 
         boolean targetLocked = false;
@@ -102,7 +103,7 @@ public class TryTwo extends LinearOpMode
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
             if (!targetLocked) {
-                rotateWithEncodersToAngle(angle - angles.firstAngle);
+                rotateWithEncodersToAngle(angles.firstAngle - angle);
                 targetLocked = true;
             }
 
