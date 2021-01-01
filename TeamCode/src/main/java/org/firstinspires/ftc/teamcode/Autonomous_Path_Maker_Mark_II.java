@@ -50,16 +50,19 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
         while(opModeIsActive()) {
 
             //Put Movement Here
-            moveToTarget(-0.5, 0, 0.5);
-            moveToTarget(0, 0.5, 0.5);
-            moveToTarget(0.5, 0, 0.5);
-            moveToTargetWithOdometry(0, 0, 0.5);
+            moveToTarget(0.75, 0, 0.5);
+            moveToTarget(0, 0.25, 0.5);
+            moveToTarget(0.25, 0.75, 0.5);
+            moveToOrigin(0.5);
+//            moveToTarget(-0.5, 0, 0.5);
+//            moveToTarget(0, 0.5, 0.5);
+//            moveToTarget(0.5, 0, 0.5);
+//            moveToTargetWithOdometry(0, 0, 0.5);
 
-            rotateToAngle(0);
+//            rotateToAngle(0);
 
             //This makes the robot set itself back up nicely once the code is finished.
             stop();
-
         }
 
           }
@@ -75,13 +78,15 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
         //Sets up a boolean for if the rotation section goes left or right.
         boolean goRight = true;
 
-
-
         //This chunk of code takes the target X and Y values, gives us a hypotenuse and angle.
         double hypotenuse = Math.sqrt(targetX * targetX + targetY * targetY);
         double angleTan = (targetY/targetX);
         double angleMath = Math.atan(angleTan) * 180/3.14;
-        double angle = angleMath;
+        double angle = 90 - angleMath;
+
+        if(targetY < 0){
+            angle += 180;
+        }
 
         //Outlying Conditions For Math Or Something, I don't know, I just want working code.
         if(targetX == 0){
@@ -194,11 +199,17 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
                 complete = true;
                 telemetry.update();
             }
+            telemetry.addData("Hypotenuse", hypotenuse);
+            telemetry.addData("Angle", angle);
+            telemetry.addData("Heading", angles.firstAngle);
+            telemetry.addData("Distance Needed", encoderDistance);
+            telemetry.addData("Target Locked?", targetLocked);
             telemetry.addData("Current Rotation", currentAngle/2000*90);
             telemetry.addData("Current X", currentX);
             telemetry.addData("Current Y", currentY);
             telemetry.update();
         }
+//        sleep(5000);
     }
 
     //This is just the previous part of the code but with just the rotation parts. Allows rotation without movement, simply input an angle in degrees. Radians are for sinners.
@@ -346,20 +357,25 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
         BrightDrive.setPower(0);
     }
 
-    public void moveToTargetWithOdometry(double enterX, double enterY, double desiredSpeed){
+    public void moveToOrigin(double desiredSpeed){
 
         //Sets up a boolean for if the rotation section goes left or right.
         boolean goRight = true;
 
         //Odometry Stuff Once More, this chunk allows the robot to find a coordinate on the field and take the shortest path there.
-        double targetX = enterX - currentX;
-        double targetY = enterY - currentY;
+        double targetX = currentX;
+        double targetY =  currentY;
 
         //This chunk of code takes the target X and Y values, gives us a hypotenuse and angle.
         double hypotenuse = Math.sqrt(targetX * targetX + targetY * targetY);
         double angleTan = (targetY/targetX);
         double angleMath = Math.atan(angleTan) * 180/3.14;
-        double angle = angleMath;
+        double angle = 90 - angleMath;
+
+
+//        if(enterY < 0){
+//            angle += 180;
+//        }
 
         //Outlying Conditions For Math Or Something, I don't know, I just want working code.
         if(targetX == 0){
@@ -399,6 +415,12 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
             }
         }
 
+        if(targetX < 0){
+            if(targetY < 0){
+                angle -=180;
+            }
+        }
+
         telemetry.addData("Angle", angle);
         telemetry.update();
 
@@ -407,7 +429,7 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
 
         //Sees if we gave it a negative speed, allows us to go backwards.
         boolean goBack = false;
-        if(desiredSpeed < 0){
+        if(desiredSpeed > 0){
             goBack = true;
             desiredSpeed = Math.abs(desiredSpeed);
         }
@@ -463,17 +485,18 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
 
                 //Basically Odometry Stuff.
                 currentAngle = encoderRotation;
-                currentX += enterX;
-                currentY += enterY;
-
+                currentX = 0;
+                currentY = 0;
 
                 //Breaks the loop by setting complete to true.
                 complete = true;
                 telemetry.update();
             }
-            telemetry.addData("Current Rotation", currentAngle/2000*90);
-            telemetry.addData("Current X", currentX);
-            telemetry.addData("Current Y", currentY);
+            telemetry.addData("Hypotenuse", hypotenuse);
+            telemetry.addData("Angle", angle);
+            telemetry.addData("Heading", angles.firstAngle);
+            telemetry.addData("Distance Needed", encoderDistance);
+            telemetry.addData("Target Locked?", targetLocked);
             telemetry.update();
         }
     }
