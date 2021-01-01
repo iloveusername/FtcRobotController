@@ -23,8 +23,8 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
     static final double rotToEncoder = 2065/90;
 
     //This is the onboard gyroscope, pretty neat.
-    BNO055IMU imu;
-    Orientation angles;
+//    BNO055IMU imu;
+//    Orientation angles;
     int currentAngle = 0;
     double currentX = 0;
     double currentY = 0;
@@ -37,8 +37,8 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         parameters.calibrationDataFile = "BNO055IMUCalibration.json";
-        imu = hardwareMap.get(BNO055IMU.class, "imu");
-        imu.initialize(parameters);
+//        imu = hardwareMap.get(BNO055IMU.class, "imu");
+//        imu.initialize(parameters);
 
         waitForStart();
 
@@ -50,15 +50,10 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
         while(opModeIsActive()) {
 
             //Put Movement Here
-            moveToTarget(0.75, 0, 1);
-            moveToTarget(0, 0.25, 1);
-            moveToTarget(0.25, 0.75, 1);
-            moveToOrigin(1);
-            moveToTarget(-0.5, 0, 1);
-            moveToTarget(0, 0.5, 1);
-            moveToTarget(0.5, 0, 1);
-            moveToOrigin(0.5);
-            moveToTarget(0.5, 0, 0.5);
+            moveToCoordinates(0,1,0.5);
+            moveToCoordinates(1,1,0.5);
+            moveToCoordinates(1,0,0.5);
+            moveToCoordinates(0,0,0.5);
             rotateToAngle(0);
 
             stop();
@@ -158,7 +153,7 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
         while(!complete && opModeIsActive()) {
 
             //This updates the gyroscope, and lets us see the current angle.
-            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+//            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
             int distanceToturn = Math.abs(encoderRotation - currentAngle);
 
             //This code simply turns the robot until it reaches a desired angle, by comparing current angle to the one we want.
@@ -200,7 +195,7 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
             }
             telemetry.addData("Hypotenuse", hypotenuse);
             telemetry.addData("Angle", angle);
-            telemetry.addData("Heading", angles.firstAngle);
+//            telemetry.addData("Heading", angles.firstAngle);
             telemetry.addData("Distance Needed", encoderDistance);
             telemetry.addData("Target Locked?", targetLocked);
             telemetry.addData("Current Rotation", currentAngle/2000*90);
@@ -245,7 +240,6 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
         currentAngle = encoderRotation;
 
     }
-
 
     //Standard encoder stuff. Nothing cool here.
     public void encoderDrive(int desiredEncoder, double desiredSpeed){
@@ -374,7 +368,6 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
         double angleMath = Math.atan(angleTan) * 180/3.14;
         double angle = 90 - angleMath;
 
-
 //        if(enterY < 0){
 //            angle += 180;
 //        }
@@ -390,6 +383,7 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
                 }
             }
         }
+
         if(targetY == 0){
             if(targetX != 0){
                 if(targetX > 0){
@@ -454,7 +448,7 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
         while(!complete && opModeIsActive()) {
 
             //This updates the gyroscope, and lets us see the current angle.
-            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+//            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
             int distanceToturn = Math.abs(encoderRotation - currentAngle);
 
             //This code simply turns the robot until it reaches a desired angle, by comparing current angle to the one we want.
@@ -496,7 +490,150 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
             }
             telemetry.addData("Hypotenuse", hypotenuse);
             telemetry.addData("Angle", angle);
-            telemetry.addData("Heading", angles.firstAngle);
+//            telemetry.addData("Heading", angles.firstAngle);
+            telemetry.addData("Distance Needed", encoderDistance);
+            telemetry.addData("Target Locked?", targetLocked);
+            telemetry.update();
+        }
+    }
+    public void moveToCoordinates(double desiredX, double desiredY, double desiredSpeed){
+
+        //Sets up a boolean for if the rotation section goes left or right.
+        boolean goRight = true;
+
+        //Odometry Stuff Once More, this chunk allows the robot to find a coordinate on the field and take the shortest path there.
+        double targetX = desiredX - currentX;
+        double targetY =  desiredY - currentY;
+
+        //This chunk of code takes the target X and Y values, gives us a hypotenuse and angle.
+        double hypotenuse = Math.sqrt(targetX * targetX + targetY * targetY);
+        double angleTan = (targetY/targetX);
+        double angleMath = Math.atan(angleTan) * 180/3.14;
+        double angle = 90 - angleMath;
+
+
+//        if(enterY < 0){
+//            angle += 180;
+//        }
+
+        //Outlying Conditions For Math Or Something, I don't know, I just want working code.
+        if(targetX == 0){
+            if(targetY != 0){
+                if(targetY > 0){
+                    angle = 0;
+                }
+                if(targetY < 0){
+                    angle = 180;
+                }
+            }
+        }
+        if(targetY == 0){
+            if(targetX != 0){
+                if(targetX > 0){
+                    angle = 90;
+                }
+                if(targetX < 0){
+                    angle = -90;
+                }
+            }
+        }
+
+        //Logic For Rotation.
+        if(angle > 0){
+            goRight = true;
+        }
+        if(angle < 0){
+            goRight = false;
+        }
+        if(angle == 0){
+            if(currentAngle > 0){
+                goRight = false;
+            }
+            if(currentAngle < 0){
+                goRight = true;
+            }
+        }
+
+        if(targetX < 0){
+            if(targetY < 0){
+                angle -=180;
+            }
+        }
+
+        telemetry.addData("Angle", angle);
+        telemetry.update();
+
+        //Encoder Stuff For Encoder People.
+        int encoderRotation = (int) Math.round(angle * rotToEncoder);
+
+        //Sees if we gave it a negative speed, allows us to go backwards.
+        boolean goBack = false;
+        if(desiredSpeed > 0){
+            goBack = false;
+            desiredSpeed = Math.abs(desiredSpeed);
+        }
+
+
+
+        boolean complete = false;
+
+        //This is to check for dividing by 0 once more, it'll set the hypotenuse to whatever the target Y value is. Since we only divide by 0 for vertical lines, whatever the target Y value is will be the hypotenuse.
+        if(hypotenuse != hypotenuse){
+            hypotenuse = Math.abs(targetY);
+        }
+
+        //Multiplies the hypotenuse value by the length of one meter in encoder values.
+        int encoderDistance = (int) Math.round(hypotenuse * 1620);
+
+        boolean targetLocked = false;
+
+        //Makes sure the program doesn't skip to the next part without completing the encoder stuff.
+        while(!complete && opModeIsActive()) {
+
+            //This updates the gyroscope, and lets us see the current angle.
+//            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            int distanceToturn = Math.abs(encoderRotation - currentAngle);
+
+            //This code simply turns the robot until it reaches a desired angle, by comparing current angle to the one we want.
+            if (!targetLocked) {
+                if (goRight){
+                    wheelsTurnRight();
+                    encoderDrive(distanceToturn, 0.5);
+                    targetLocked = true;
+                }
+                if (!goRight){
+                    wheelsTurnLeft();
+                    encoderDrive(distanceToturn, 0.5);
+                    targetLocked = true;
+                }
+
+            }
+
+            //Once at the target angle, the robot will switch to encoders and travel the distance of the hypotenuse.
+            if (targetLocked) {
+
+                //Logic for going forwards or backwards.
+                if(goBack){
+                    wheelsBackwards();
+                }
+                if(!goBack){
+                    wheelsForward();
+                }
+
+                encoderDrive(encoderDistance, desiredSpeed);
+
+                //Basically Odometry Stuff.
+                currentAngle = encoderRotation;
+                currentX = desiredX;
+                currentY = desiredY;
+
+                //Breaks the loop by setting complete to true.
+                complete = true;
+                telemetry.update();
+            }
+            telemetry.addData("Hypotenuse", hypotenuse);
+            telemetry.addData("Angle", angle);
+//            telemetry.addData("Heading", angles.firstAngle);
             telemetry.addData("Distance Needed", encoderDistance);
             telemetry.addData("Target Locked?", targetLocked);
             telemetry.update();
