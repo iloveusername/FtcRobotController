@@ -50,11 +50,14 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
         while(opModeIsActive()) {
 
             //Put Movement Here
-            moveToCoordinates(0,1,0.5);
-            moveToCoordinates(1,1,0.5);
-            moveToCoordinates(1,0,0.5);
-            moveToCoordinates(0,0,0.5);
-            rotateToAngle(0);
+            moveToTarget(0.75, 1, 0.5);
+            moveToTarget(0, 0.25, 0.5);
+            moveToTarget(-1, 0, 0.5);
+            moveToOrigin(0.5);
+            telemetry.addData("Angle", currentAngle);
+            sleep(5000);
+//            moveToTarget(0, 0.1, 0.5);
+//            moveToTarget(0, 0.1, -0.5);
 
             stop();
         }
@@ -67,6 +70,7 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
     1 Meter In Encoder Values: 1620
      */
 
+    //This smooth jazz is written like someone transposed a screeching cat, but at least it runs.
     public void moveToTarget(double targetX, double targetY, double desiredSpeed){
 
         //Sets up a boolean for if the rotation section goes left or right.
@@ -220,9 +224,6 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
         if(angle < 0){
             goRight = false;
         }
-
-        angle = angle - 90;
-
         while(!isDone && opModeIsActive()){
             if (goRight){
                 wheelsTurnRight();
@@ -417,6 +418,10 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
             }
         }
 
+        if(currentX < 0){
+            angle *= -1;
+        }
+
         telemetry.addData("Angle", angle);
         telemetry.update();
 
@@ -480,6 +485,12 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
                 encoderDrive(encoderDistance, desiredSpeed);
 
                 //Basically Odometry Stuff.
+//                if(currentX > 0){
+//                    currentAngle = -encoderRotation;
+//                }
+//                if(currentX < 0){
+//                    currentAngle = encoderRotation;
+//                }
                 currentAngle = encoderRotation;
                 currentX = 0;
                 currentY = 0;
@@ -496,6 +507,7 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
             telemetry.update();
         }
     }
+
     public void moveToCoordinates(double desiredX, double desiredY, double desiredSpeed){
 
         //Sets up a boolean for if the rotation section goes left or right.
@@ -623,7 +635,7 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
                 encoderDrive(encoderDistance, desiredSpeed);
 
                 //Basically Odometry Stuff.
-                currentAngle = encoderRotation;
+                currentAngle = -encoderRotation;
                 currentX = desiredX;
                 currentY = desiredY;
 
