@@ -20,7 +20,7 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
     private DcMotor BrightDrive = null;
 
     //This is a ratio for ratio things. About 2000 Encoder Ticks to a 90 Degree Turn. Default is 22, Adjust to deal with encoder loss if needed.
-    static final double rotToEncoder = 2100/90;
+    static final double rotToEncoder = 2065/90;
 
     //This is the onboard gyroscope, pretty neat.
     BNO055IMU imu;
@@ -218,6 +218,7 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
         boolean isDone = false;
         boolean goRight = true;
         int encoderRotation = (int) Math.round(angle*rotToEncoder);
+        angle = angle - 90;
         int distanceToturn = Math.abs(encoderRotation - currentAngle);
         if(angle > 0){
             goRight = true;
