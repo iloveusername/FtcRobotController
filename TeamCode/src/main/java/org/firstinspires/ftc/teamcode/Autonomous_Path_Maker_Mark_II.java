@@ -58,10 +58,9 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
             moveToTarget(0, 0.5, 1);
             moveToTarget(0.5, 0, 1);
             moveToOrigin(0.5);
-
+            moveToTarget(0.5, 0, 0.5);
             rotateToAngle(0);
 
-            //This makes the robot set itself back up nicely once the code is finished.
             stop();
         }
 
