@@ -50,16 +50,16 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
         while(opModeIsActive()) {
 
             //Put Movement Here
-            moveToTarget(0.75, 0, 0.5);
-            moveToTarget(0, 0.25, 0.5);
-            moveToTarget(0.25, 0.75, 0.5);
+            moveToTarget(0.75, 0, 1);
+            moveToTarget(0, 0.25, 1);
+            moveToTarget(0.25, 0.75, 1);
+            moveToOrigin(1);
+            moveToTarget(-0.5, 0, 1);
+            moveToTarget(0, 0.5, 1);
+            moveToTarget(0.5, 0, 1);
             moveToOrigin(0.5);
-//            moveToTarget(-0.5, 0, 0.5);
-//            moveToTarget(0, 0.5, 0.5);
-//            moveToTarget(0.5, 0, 0.5);
-//            moveToTargetWithOdometry(0, 0, 0.5);
 
-//            rotateToAngle(0);
+            rotateToAngle(0);
 
             //This makes the robot set itself back up nicely once the code is finished.
             stop();
@@ -225,6 +225,8 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
         if(angle < 0){
             goRight = false;
         }
+
+        angle = angle - 90;
 
         while(!isDone && opModeIsActive()){
             if (goRight){
