@@ -11,14 +11,14 @@ public class Autonomous_Path_Maker_Mark_III extends LinearOpMode {
     private DcMotor BleftDrive = null;
     private DcMotor BrightDrive = null;
 
-    //This is a ratio for ratio things. About 2000 Encoder Ticks to a 90 Degree Turn. Default is 22, Adjust to deal with encoder loss if needed.
+    //This is a ratio for ratio things. About 2000 Encoder Ticks to a 90 Degree Turn. Default is 22, Adjust to deal with encoder loss if needed. 1620 ticks for one meter, I think. I don't have a meter stick, so who really knows.
     static final double rotToEncoder = 2065 / 90;
+    static final double meterToEncoder = 1620;
 
+    //Sets up odometry.
     double currentAngle = 0;
     double currentX = 0;
     double currentY = 0;
-
-
 
     @Override
     public void runOpMode() {
@@ -40,7 +40,6 @@ public class Autonomous_Path_Maker_Mark_III extends LinearOpMode {
             goToTarget(1,-0.5,0.5);
             sleep(5000);
         }
-
     }
 
     public void goToTarget(double targetX, double targetY, double targetSpeed){
@@ -50,7 +49,6 @@ public class Autonomous_Path_Maker_Mark_III extends LinearOpMode {
         //With Absolute Values, We Can Find The Angles We Want Without Crying. No promises.
         double adjustedX = Math.abs(targetX);
         double adjustedY = Math.abs(targetY);
-
         int Quadrant = 1;
 
         //This Determines The Quadrant Of The Angle.
@@ -126,13 +124,22 @@ public class Autonomous_Path_Maker_Mark_III extends LinearOpMode {
         //Turns the robot using encoders for accuracy. Adjust speed if you want.
         encoderDrive((int) Math.round((AngleOfTri*rotToEncoder) - (currentAngle*rotToEncoder)), 0.5);
 
-        
+        //Moves the robot forward for the distance of the hypotenuse.
+        wheelDirection("up");
+        encoderDrive((int) Math.round(HypotenuseOfTri * meterToEncoder), targetSpeed);
 
+        //Updates current position and rotation.
+        currentAngle = AngleOfTri;
+        currentX += targetX;
+        currentY += targetY;
 
-
+        //Telemetry stuff for debugging.
         telemetry.addData("Angle Of Attack", AngleOfTri);
         telemetry.addData("Hypotenuse", HypotenuseOfTri);
         telemetry.addData("Quadrant", Quadrant);
+        telemetry.addData("Current X", currentX);
+        telemetry.addData("Current Y", currentY);
+        telemetry.addData("Current Rot", currentAngle);
         telemetry.update();
 
     }
