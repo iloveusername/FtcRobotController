@@ -30,6 +30,7 @@ public class TeleOpTest extends LinearOpMode {
     double currentAngle = 0;
     double currentX = 0;
     double currentY = 0;
+    double previousEncoder = 0;
 
     //Sets Up The State Machine
     String roboState = "drive";
@@ -52,20 +53,43 @@ public class TeleOpTest extends LinearOpMode {
         BleftDrive = hardwareMap.get(DcMotor.class, "BL");
         BrightDrive = hardwareMap.get(DcMotor.class, "BR");
 
-        leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        BleftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        BrightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        BleftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        BrightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        BleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        BrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
 
         wheelDirection("up");
 
         while (opModeIsActive()) {
 
+            resetDrive();
+
+
             //Gyro Stuff
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            currentAngle = -angles.firstAngle;
 
             double stickX = gamepad1.left_stick_x;
             double stickY = -gamepad1.left_stick_y;
+
+            if(gamepad1.a){
+                goToTarget(0.5,0.5,0.5);
+
+            }
+            if(gamepad1.b){
+                rotateToAngle(0);
+
+            }
+            if(gamepad1.x){
+                rotateToAngle(currentAngle - 90);
+
+            }
 
             if(gamepad1.a){
                 stickX *= 0.5;
@@ -79,14 +103,14 @@ public class TeleOpTest extends LinearOpMode {
             //Current State Detector
             if(Math.abs(stickX) > 0.25){
                 roboState = "turn";
-                if(Math.abs(stickY) > 0.25){
-                    if(stickX > 0.25){
-                        roboState = "tiltRight";
-                    }
-                    if(stickX < -0.25){
-                        roboState = "tiltLeft";
-                    }
-                }
+//                if(Math.abs(stickY) > 0.25){
+//                    if(stickX > 0.25){
+//                        roboState = "tiltRight";
+//                    }
+//                    if(stickX < -0.25){
+//                        roboState = "tiltLeft";
+//                    }
+//                }
             }
             else{
                 roboState = "drive";
@@ -101,34 +125,45 @@ public class TeleOpTest extends LinearOpMode {
                     BrightDrive.setPower(stickY);
                     break;
                 case "turn":
+                    leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    BleftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    BrightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     wheelDirection("turnRight");
                     leftDrive.setPower(stickX);
                     rightDrive.setPower(stickX);
                     BleftDrive.setPower(stickX);
                     BrightDrive.setPower(stickX);
                     break;
-                case "tiltRight":
-                    wheelDirection("up");
-                    leftDrive.setPower(stickY);
-                    rightDrive.setPower(stickY * 0.3);
-                    BleftDrive.setPower(stickY);
-                    BrightDrive.setPower(stickY * 0.3);
-                    break;
-                case "tiltLeft":
-                    wheelDirection("up");
-                    leftDrive.setPower(stickY * 0.3);
-                    rightDrive.setPower(stickY);
-                    BleftDrive.setPower(stickY * 0.3);
-                    BrightDrive.setPower(stickY);
-                    break;
+//                case "tiltRight":
+//                    wheelDirection("up");
+//                    leftDrive.setPower(stickY);
+//                    rightDrive.setPower(stickY * 0.3);
+//                    BleftDrive.setPower(stickY);
+//                    BrightDrive.setPower(stickY * 0.3);
+//                    break;
+//                case "tiltLeft":
+//                    wheelDirection("up");
+//                    leftDrive.setPower(stickY * 0.3);
+//                    rightDrive.setPower(stickY);
+//                    BleftDrive.setPower(stickY * 0.3);
+//                    BrightDrive.setPower(stickY);
+//                    break;
 
             }
 
+
+            currentY += Math.cos(currentAngle) * (leftDrive.getCurrentPosition() - previousEncoder);
+            currentX += Math.sin(currentAngle) * (leftDrive.getCurrentPosition() - previousEncoder);
             telemetry.addData("Stick X", stickX);
             telemetry.addData("Stick Y", stickY);
+            telemetry.addData("Current Rot", currentAngle);
+            telemetry.addData("Current X", currentX/meterToEncoder);
+            telemetry.addData("Current Y", currentY/meterToEncoder);
             telemetry.addData("State", roboState);
             telemetry.update();
 
+            previousEncoder = leftDrive.getCurrentPosition();
         }
     }
 
@@ -233,7 +268,6 @@ public class TeleOpTest extends LinearOpMode {
             telemetry.update();
 
             //Updates current position and rotation.
-            currentAngle = AngleOfTri;
             currentX += targetX;
             currentY += targetY;
 
@@ -464,23 +498,25 @@ public class TeleOpTest extends LinearOpMode {
         }
     }
 
-    public void rotateToAngle(double angle, double desiredSpeed){
+    public void rotateToAngle(double angle){
+        boolean isDone = false;
 
-        //Determine if we need to spin left or right.
-        if(angle > currentAngle){
-            wheelDirection("turnRight");
+        while(!isDone) {
+            //Determine if we need to spin left or right.
+            if (angle > currentAngle) {
+                wheelDirection("turnRight");
+            }
+            if (angle < currentAngle) {
+                wheelDirection("turnLeft");
+            }
+
+            //Turns the robot using encoders for accuracy. Adjust speed if you want.
+            int encoderTurn = (int) Math.round(((angle - currentAngle) * rotToEncoder));
+            encoderTurn = Math.abs(encoderTurn);
+            encoderDrive(encoderTurn, 0.5);
+
+            isDone = true;
         }
-        if(angle < currentAngle){
-            wheelDirection("turnLeft");
-        }
-
-        //Turns the robot using encoders for accuracy. Adjust speed if you want.
-        int encoderTurn = (int) Math.round(((angle - currentAngle)*rotToEncoder));
-        encoderTurn = Math.abs(encoderTurn);
-        encoderDrive(encoderTurn, 0.5);
-
-        currentAngle = angle;
-
     }
 
     public void wheelDirection(String dir){
@@ -564,6 +600,13 @@ public class TeleOpTest extends LinearOpMode {
         BrightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
+
+    public void resetDrive(){
+        leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        BleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        BrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
 }
 
 
