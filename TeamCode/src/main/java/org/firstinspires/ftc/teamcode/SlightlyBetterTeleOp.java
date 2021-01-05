@@ -1,12 +1,11 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-@TeleOp(name="TeleOp Mark I", group="Basic")
-public class TeleOpTest extends LinearOpMode {
+@TeleOp(name="TeleOp Mark II", group="Basic")
+public class SlightlyBetterTeleOp extends LinearOpMode {
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
     private DcMotor BleftDrive = null;
@@ -48,6 +47,16 @@ public class TeleOpTest extends LinearOpMode {
 
             double stickX = gamepad1.left_stick_x;
             double stickY = -gamepad1.left_stick_y;
+            double dropOff = 1 - Math.abs(stickX/2);
+            double dropOffLeft = 1;
+            double dropOffRight = 1;
+
+            if(stickX > 0){
+                dropOffRight = dropOff;
+            }
+            if(stickX < 0){
+                dropOffLeft = dropOff;
+            }
 
             if(gamepad1.a){
                 stickX *= 0.5;
@@ -58,53 +67,10 @@ public class TeleOpTest extends LinearOpMode {
                 stickY *= 0;
             }
 
-            //Current State Detector
-            if(Math.abs(stickX) > 0.25){
-                roboState = "turn";
-                if(Math.abs(stickY) > 0.25){
-                    if(stickX > 0.25){
-                        roboState = "tiltRight";
-                    }
-                    if(stickX < -0.25){
-                        roboState = "tiltLeft";
-                    }
-                }
-            }
-            else{
-                roboState = "drive";
-            }
-
-            switch (roboState){
-                case "drive":
-                    wheelDirection("up");
-                    leftDrive.setPower(stickY);
-                    rightDrive.setPower(stickY);
-                    BleftDrive.setPower(stickY);
-                    BrightDrive.setPower(stickY);
-                    break;
-                case "turn":
-                    wheelDirection("turnRight");
-                    leftDrive.setPower(stickX);
-                    rightDrive.setPower(stickX);
-                    BleftDrive.setPower(stickX);
-                    BrightDrive.setPower(stickX);
-                    break;
-                case "tiltRight":
-                    wheelDirection("up");
-                    leftDrive.setPower(stickY);
-                    rightDrive.setPower(stickY * 0.6);
-                    BleftDrive.setPower(stickY);
-                    BrightDrive.setPower(stickY * 0.6);
-                    break;
-                case "tiltLeft":
-                    wheelDirection("up");
-                    leftDrive.setPower(stickY * 0.6);
-                    rightDrive.setPower(stickY);
-                    BleftDrive.setPower(stickY * 0.6);
-                    BrightDrive.setPower(stickY);
-                    break;
-
-            }
+            leftDrive.setPower(stickY * dropOffLeft);
+            rightDrive.setPower(stickY * dropOffRight);
+            BleftDrive.setPower(stickY * dropOffLeft);
+            BrightDrive.setPower(stickY * dropOffRight);
 
             telemetry.addData("Stick X", stickX);
             telemetry.addData("Stick Y", stickY);
