@@ -115,6 +115,21 @@ public class Autonomous_Path_Maker_Mark_III extends LinearOpMode {
             }
         }
 
+        //Determine turning direction.
+        if(AngleOfTri > currentAngle){
+            wheelDirection("turnRight");
+        }
+        if(AngleOfTri < currentAngle){
+            wheelDirection("turnLeft");
+        }
+
+        //Turns the robot using encoders for accuracy. Adjust speed if you want.
+        encoderDrive((int) Math.round((AngleOfTri*rotToEncoder) - (currentAngle*rotToEncoder)), 0.5);
+
+        
+
+
+
         telemetry.addData("Angle Of Attack", AngleOfTri);
         telemetry.addData("Hypotenuse", HypotenuseOfTri);
         telemetry.addData("Quadrant", Quadrant);
