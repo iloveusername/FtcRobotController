@@ -50,11 +50,16 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
         while(opModeIsActive()) {
 
             //Put Movement Here
-            moveToTarget(0.75, 1, 0.5);
-            moveToTarget(0, 0.25, 0.5);
-            moveToTarget(-1, 0, 0.5);
+            rotateToAngle(90);
+            rotateToAngle(0);
+            moveToTarget(-0.75, 1, 0.5);
+
             moveToOrigin(0.5);
-            telemetry.addData("Angle", currentAngle);
+            rotateToAngle(0);
+
+            telemetry.addData("Current Rotation", currentAngle);
+            telemetry.update();
+
             sleep(5000);
 //            moveToTarget(0, 0.1, 0.5);
 //            moveToTarget(0, 0.1, -0.5);
@@ -124,7 +129,7 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
             }
         }
 
-        telemetry.addData("Current Rotation", currentAngle/2000*90);
+        telemetry.addData("Current Rotation", currentAngle);
         telemetry.addData("Current X", currentX);
         telemetry.addData("Current Y", currentY);
         telemetry.update();
@@ -197,12 +202,7 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
                 complete = true;
                 telemetry.update();
             }
-            telemetry.addData("Hypotenuse", hypotenuse);
-            telemetry.addData("Angle", angle);
-//            telemetry.addData("Heading", angles.firstAngle);
-            telemetry.addData("Distance Needed", encoderDistance);
-            telemetry.addData("Target Locked?", targetLocked);
-            telemetry.addData("Current Rotation", currentAngle/2000*90);
+            telemetry.addData("Current Rotation", currentAngle);
             telemetry.addData("Current X", currentX);
             telemetry.addData("Current Y", currentY);
             telemetry.update();
@@ -369,10 +369,6 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
         double angleMath = Math.atan(angleTan) * 180/3.14;
         double angle = 90 - angleMath;
 
-//        if(enterY < 0){
-//            angle += 180;
-//        }
-
         //Outlying Conditions For Math Or Something, I don't know, I just want working code.
         if(targetX == 0){
             if(targetY != 0){
@@ -491,7 +487,20 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
 //                if(currentX < 0){
 //                    currentAngle = encoderRotation;
 //                }
-                currentAngle = encoderRotation;
+                if(currentX >= 0){
+                    currentAngle = (int) Math.round(angle);
+                    currentAngle *= rotToEncoder;
+                    telemetry.addData("Test", "Posi X");
+                    telemetry.update();
+                }
+                if(currentX < 0){
+                    currentAngle = (int) Math.round(angle) ;
+                    currentAngle *= rotToEncoder;
+                    telemetry.addData("Test", "Negi X");
+                    telemetry.addData("Current Rotation", currentAngle);
+                    telemetry.update();
+                }
+
                 currentX = 0;
                 currentY = 0;
 
@@ -500,7 +509,7 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
                 telemetry.update();
             }
             telemetry.addData("Hypotenuse", hypotenuse);
-            telemetry.addData("Angle", angle);
+//            telemetry.addData("Angle", angle);
 //            telemetry.addData("Heading", angles.firstAngle);
             telemetry.addData("Distance Needed", encoderDistance);
             telemetry.addData("Target Locked?", targetLocked);
@@ -635,7 +644,8 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
                 encoderDrive(encoderDistance, desiredSpeed);
 
                 //Basically Odometry Stuff.
-                currentAngle = -encoderRotation;
+
+
                 currentX = desiredX;
                 currentY = desiredY;
 
