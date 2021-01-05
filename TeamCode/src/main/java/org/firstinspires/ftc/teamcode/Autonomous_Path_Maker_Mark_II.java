@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -12,6 +13,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 @Autonomous(name="Autonomous Path Maker Mark II", group="Tools")
+@Disabled
 public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
 {
     private DcMotor leftDrive = null;
@@ -19,7 +21,7 @@ public class Autonomous_Path_Maker_Mark_II extends LinearOpMode
     private DcMotor BleftDrive = null;
     private DcMotor BrightDrive = null;
 
-    //This is a ratio for ratio things. About 2000 Encoder Ticks to a 90 Degree Turn. Default is 22, Adjust to deal with encoder loss if needed.
+    //This is a ratio for ratio things. About 2000 Encoder Ticks to a 90 Degree Turn. Default is 22.22, Adjust to deal with drift if needed.
     static final double rotToEncoder = 2065/90;
 
     //This is the onboard gyroscope, pretty neat.

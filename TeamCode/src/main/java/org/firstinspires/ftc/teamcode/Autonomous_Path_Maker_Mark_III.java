@@ -11,7 +11,7 @@ public class Autonomous_Path_Maker_Mark_III extends LinearOpMode {
     private DcMotor BleftDrive = null;
     private DcMotor BrightDrive = null;
 
-    //This is a ratio for ratio things. About 2000 Encoder Ticks to a 90 Degree Turn. Default is 22, Adjust to deal with encoder loss if needed. 1620 ticks for one meter, I think. I don't have a meter stick, so who really knows.
+    //This is a ratio for ratio things. About 2000 Encoder Ticks to a 90 Degree Turn. Default is ~22, Adjust to deal with encoder loss if needed. 1620 ticks for one meter, I think. I don't have a meter stick, so who really knows.
     static final double rotToEncoder = 2065 / 90;
     static final double meterToEncoder = 1620;
 
@@ -31,14 +31,8 @@ public class Autonomous_Path_Maker_Mark_III extends LinearOpMode {
         BrightDrive = hardwareMap.get(DcMotor.class, "BR");
 
         while (opModeIsActive()) {
-            goToTarget(1,0.5, 0.5);
-            sleep(5000);
-            goToTarget(-1,0.5,0.5);
-            sleep(5000);
-            goToTarget(-1,-0.5,0.5);
-            sleep(5000);
-            goToTarget(1,-0.5,0.5);
-            sleep(5000);
+            goToTarget(1,1,0.5);
+            goToCoordinates(-1, -1, 0);
         }
     }
 
@@ -317,8 +311,8 @@ public class Autonomous_Path_Maker_Mark_III extends LinearOpMode {
 
         //Updates current position and rotation.
         currentAngle = AngleOfTri;
-        currentX += targetX;
-        currentY += targetY;
+        currentX = 0;
+        currentY = 0;
 
         //Telemetry stuff for debugging.
         telemetry.addData("Angle Of Attack", AngleOfTri);
@@ -434,6 +428,21 @@ public class Autonomous_Path_Maker_Mark_III extends LinearOpMode {
         telemetry.addData("Current Y", currentY);
         telemetry.addData("Current Rot", currentAngle);
         telemetry.update();
+
+    }
+
+    public void rotateToAngle(double angle, double desiredSpeed){
+
+        //Determine if we need to spin left or right.
+        if(angle > currentAngle){
+            wheelDirection("turnRight");
+        }
+        if(angle < currentAngle){
+            wheelDirection("turnLeft");
+        }
+
+        //Take your desired angle, subtract your current. Convert to encoders, and spin till you get to where you wanna be.
+        encoderDrive((int) Math.round((angle*rotToEncoder) - (currentAngle*rotToEncoder)), desiredSpeed);
 
     }
 }
