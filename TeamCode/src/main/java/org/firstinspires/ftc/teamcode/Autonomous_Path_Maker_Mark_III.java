@@ -34,8 +34,11 @@ public class Autonomous_Path_Maker_Mark_III extends LinearOpMode {
 
             //Put the movement stuff here.
             goToTarget(1,1,0.5);
-            goToCoordinates(-1, -1, 0.5);
+            goToTarget(-1, 0, 0.5);
             goToOrigin(0.5);
+//            rotateToAngle(90, 0.5);
+//            goToTarget(-0.5, 0, 0.5);
+            //goToOrigin(0.5);
             rotateToAngle(0, 0.5);
             stop();
         }
@@ -91,7 +94,7 @@ public class Autonomous_Path_Maker_Mark_III extends LinearOpMode {
         //This determines if we are going vertical or horizontal, and sets the angle to whatever it needs to be.
         if(targetX == 0){
             if(targetY != 0){
-                HypotenuseOfTri = targetY;
+                HypotenuseOfTri = Math.abs(targetY);
                 if(targetY > 0){
                     AngleOfTri = 0;
                 }
@@ -102,7 +105,7 @@ public class Autonomous_Path_Maker_Mark_III extends LinearOpMode {
         }
         if(targetY == 0){
             if(targetX != 0){
-                HypotenuseOfTri = targetX;
+                HypotenuseOfTri = Math.abs(targetX);
                 if(targetX > 0){
                     AngleOfTri = 90;
                 }
@@ -120,26 +123,36 @@ public class Autonomous_Path_Maker_Mark_III extends LinearOpMode {
             wheelDirection("turnLeft");
         }
 
-        //Turns the robot using encoders for accuracy. Adjust speed if you want.
-        encoderDrive((int) Math.round((AngleOfTri*rotToEncoder) - (currentAngle*rotToEncoder)), 0.5);
+        while(!isDone && opModeIsActive()){
 
-        //Moves the robot forward for the distance of the hypotenuse.
-        wheelDirection("up");
-        encoderDrive((int) Math.round(HypotenuseOfTri * meterToEncoder), targetSpeed);
+            //Turns the robot using encoders for accuracy. Adjust speed if you want.
+            int encoderTurn = (int) Math.round(((AngleOfTri - currentAngle)*rotToEncoder));
+            encoderTurn = Math.abs(encoderTurn);
+            encoderDrive(encoderTurn, 0.5);
 
-        //Updates current position and rotation.
-        currentAngle = AngleOfTri;
-        currentX += targetX;
-        currentY += targetY;
+            //Moves the robot forward for the distance of the hypotenuse.
+            wheelDirection("up");
+            encoderDrive((int) Math.round(HypotenuseOfTri * meterToEncoder), targetSpeed);
 
-        //Telemetry stuff for debugging.
-        telemetry.addData("Angle Of Attack", AngleOfTri);
-        telemetry.addData("Hypotenuse", HypotenuseOfTri);
-        telemetry.addData("Quadrant", Quadrant);
-        telemetry.addData("Current X", currentX);
-        telemetry.addData("Current Y", currentY);
-        telemetry.addData("Current Rot", currentAngle);
-        telemetry.update();
+            //Telemetry stuff for debugging.
+            telemetry.addData("Distance To Rotate", (AngleOfTri - currentAngle));
+            telemetry.addData("Angle Of Attack", AngleOfTri);
+            telemetry.addData("Hypotenuse", HypotenuseOfTri);
+            telemetry.addData("Quadrant", Quadrant);
+            telemetry.addData("Current X", currentX);
+            telemetry.addData("Current Y", currentY);
+            telemetry.addData("Current Rot", currentAngle);
+            telemetry.update();
+
+            //Updates current position and rotation.
+            currentAngle = AngleOfTri;
+            currentX += targetX;
+            currentY += targetY;
+
+            isDone = true;
+
+        }
+
 
     }
 
@@ -197,7 +210,7 @@ public class Autonomous_Path_Maker_Mark_III extends LinearOpMode {
         //This determines if we are going vertical or horizontal, and sets the angle to whatever it needs to be.
         if(targetX == 0){
             if(targetY != 0){
-                HypotenuseOfTri = targetY;
+                HypotenuseOfTri = Math.abs(targetY);
                 if(targetY > 0){
                     AngleOfTri = 0;
                 }
@@ -208,7 +221,7 @@ public class Autonomous_Path_Maker_Mark_III extends LinearOpMode {
         }
         if(targetY == 0){
             if(targetX != 0){
-                HypotenuseOfTri = targetX;
+                HypotenuseOfTri = Math.abs(targetX);
                 if(targetX > 0){
                     AngleOfTri = 90;
                 }
@@ -227,7 +240,9 @@ public class Autonomous_Path_Maker_Mark_III extends LinearOpMode {
         }
 
         //Turns the robot using encoders for accuracy. Adjust speed if you want.
-        encoderDrive((int) Math.round((AngleOfTri*rotToEncoder) - (currentAngle*rotToEncoder)), 0.5);
+        int encoderTurn = (int) Math.round(((AngleOfTri - currentAngle)*rotToEncoder));
+        encoderTurn = Math.abs(encoderTurn);
+        encoderDrive(encoderTurn, 0.5);
 
         //Moves the robot forward for the distance of the hypotenuse.
         wheelDirection("up");
@@ -303,7 +318,7 @@ public class Autonomous_Path_Maker_Mark_III extends LinearOpMode {
         //This determines if we are going vertical or horizontal, and sets the angle to whatever it needs to be.
         if(targetX == 0){
             if(targetY != 0){
-                HypotenuseOfTri = targetY;
+                HypotenuseOfTri = Math.abs(targetY);
                 if(targetY > 0){
                     AngleOfTri = 0;
                 }
@@ -314,7 +329,7 @@ public class Autonomous_Path_Maker_Mark_III extends LinearOpMode {
         }
         if(targetY == 0){
             if(targetX != 0){
-                HypotenuseOfTri = targetX;
+                HypotenuseOfTri = Math.abs(targetX);
                 if(targetX > 0){
                     AngleOfTri = 90;
                 }
@@ -332,27 +347,33 @@ public class Autonomous_Path_Maker_Mark_III extends LinearOpMode {
             wheelDirection("turnLeft");
         }
 
-        //Turns the robot using encoders for accuracy. Adjust speed if you want.
-        encoderDrive((int) Math.round((AngleOfTri*rotToEncoder) - (currentAngle*rotToEncoder)), 0.5);
+        while(!isDone && opModeIsActive()){
+            //Turns the robot using encoders for accuracy. Adjust speed if you want.
+            int encoderTurn = (int) Math.round(((AngleOfTri - currentAngle)*rotToEncoder));
+            encoderTurn = Math.abs(encoderTurn);
+            encoderDrive(encoderTurn, 0.5);
 
-        //Moves the robot forward for the distance of the hypotenuse.
-        wheelDirection("down");
-        encoderDrive((int) Math.round(HypotenuseOfTri * meterToEncoder), targetSpeed);
+            //Moves the robot forward for the distance of the hypotenuse.
+            wheelDirection("up");
+            encoderDrive((int) Math.round(HypotenuseOfTri * meterToEncoder), targetSpeed);
 
-        //Updates current position and rotation.
-        currentAngle = AngleOfTri;
-        currentX = 0;
-        currentY = 0;
+            //Telemetry stuff for debugging.
+            telemetry.addData("Distance To Rotate", (AngleOfTri - currentAngle));
+            telemetry.addData("Angle Of Attack", AngleOfTri);
+            telemetry.addData("Hypotenuse", HypotenuseOfTri);
+            telemetry.addData("Quadrant", Quadrant);
+            telemetry.addData("Current X", currentX);
+            telemetry.addData("Current Y", currentY);
+            telemetry.addData("Current Rot", currentAngle);
+            telemetry.update();
 
-        //Telemetry stuff for debugging.
-        telemetry.addData("Angle Of Attack", AngleOfTri);
-        telemetry.addData("Hypotenuse", HypotenuseOfTri);
-        telemetry.addData("Quadrant", Quadrant);
-        telemetry.addData("Current X", currentX);
-        telemetry.addData("Current Y", currentY);
-        telemetry.addData("Current Rot", currentAngle);
-        telemetry.update();
+            //Updates current position and rotation.
+            currentAngle = AngleOfTri;
+            currentX += targetX;
+            currentY += targetY;
 
+            isDone = true;
+        }
     }
 
     public void rotateToAngle(double angle, double desiredSpeed){
