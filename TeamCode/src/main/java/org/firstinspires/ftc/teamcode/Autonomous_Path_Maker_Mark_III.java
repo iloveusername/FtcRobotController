@@ -34,13 +34,15 @@ public class Autonomous_Path_Maker_Mark_III extends LinearOpMode {
 
             //Put the movement stuff here.
             goToTarget(1,1,0.5);
-            goToTarget(-1, 0, 0.5);
-            goToOrigin(0.5);
-//            rotateToAngle(90, 0.5);
-//            goToTarget(-0.5, 0, 0.5);
-            //goToOrigin(0.5);
+            goToCoordinates(-1, 1, 0.5);
+            goToCoordinates(0, 0, 0.5);
             rotateToAngle(0, 0.5);
+            goToTarget(0,1,0.5);
+            goToTarget(-0.5, 0, 0.5);
+            goToTarget(0.5, -0.5, 0.5);
+            goToOrigin(0.5);
             stop();
+
         }
     }
 
@@ -354,7 +356,7 @@ public class Autonomous_Path_Maker_Mark_III extends LinearOpMode {
             encoderDrive(encoderTurn, 0.5);
 
             //Moves the robot forward for the distance of the hypotenuse.
-            wheelDirection("up");
+            wheelDirection("down");
             encoderDrive((int) Math.round(HypotenuseOfTri * meterToEncoder), targetSpeed);
 
             //Telemetry stuff for debugging.
@@ -386,8 +388,10 @@ public class Autonomous_Path_Maker_Mark_III extends LinearOpMode {
             wheelDirection("turnLeft");
         }
 
-        //Take your desired angle, subtract your current. Convert to encoders, and spin till you get to where you wanna be.
-        encoderDrive((int) Math.round((angle*rotToEncoder) - (currentAngle*rotToEncoder)), desiredSpeed);
+        //Turns the robot using encoders for accuracy. Adjust speed if you want.
+        int encoderTurn = (int) Math.round(((angle - currentAngle)*rotToEncoder));
+        encoderTurn = Math.abs(encoderTurn);
+        encoderDrive(encoderTurn, 0.5);
 
         currentAngle = angle;
 
