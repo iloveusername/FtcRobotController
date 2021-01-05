@@ -1,10 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 @Autonomous(name="Autonomous Path Maker Mark III", group="Tools")
 public class Autonomous_Path_Maker_Mark_III extends LinearOpMode {
@@ -33,13 +31,79 @@ public class Autonomous_Path_Maker_Mark_III extends LinearOpMode {
         BrightDrive = hardwareMap.get(DcMotor.class, "BR");
 
         while (opModeIsActive()) {
-
+            goToTarget(1,1, 0.5);
+            sleep(5000);
+            goToTarget(-1,1,0.5);
+            sleep(5000);
+            goToTarget(-1,-0.5,0.5);
+            sleep(5000);
+            goToTarget(1,-0.5,0.5);
+            sleep(5000);
         }
 
     }
 
     public void goToTarget(double targetX, double targetY, double targetSpeed){
-        double Hypotenuse = Math.sqrt((targetX*targetX)+(targetY*targetY));
+        double adjustedX;
+        double adjustedY;
+        int Quadrant = 1;
+
+        //This Determines The Quadrant Of The Angle
+        if(targetX > 0){
+            if(targetY > 0){
+               Quadrant = 1;
+            }
+            if(targetY < 0){
+                Quadrant = 4;
+            }
+        }
+        if(targetX < 0){
+            if(targetY > 0){
+                Quadrant = 2;
+            }
+            if(targetY < 0){
+                Quadrant = 3;
+            }
+        }
+
+        double HypotenuseOfTri = Math.sqrt((targetX * targetX) + (targetY * targetY));
+        double AngleOfTri = 0;
+
+
+
+        switch (Quadrant){
+            case 1:
+                adjustedX = -targetY;
+                adjustedY = targetX;
+
+                AngleOfTri = Math.atan(adjustedY/adjustedX) * 180/Math.PI;
+                
+            case 2:
+                adjustedX = -targetY;
+                adjustedY = targetX;
+
+                AngleOfTri = Math.atan(adjustedY/adjustedX) * 180/Math.PI;
+                AngleOfTri *= -1;
+
+            case 3:
+                adjustedX = -targetY;
+                adjustedY = targetX;
+
+                AngleOfTri = Math.atan(adjustedY/adjustedX) * 180/Math.PI;
+
+            case 4:
+                adjustedX = -targetY;
+                adjustedY = targetX;
+
+                AngleOfTri = Math.atan(adjustedY/adjustedX) * 180/Math.PI;
+                AngleOfTri += 90;
+
+
+        }
+
+        telemetry.addData("Angle Of Attack", AngleOfTri);
+        telemetry.addData("Quadrant", Quadrant);
+        telemetry.update();
 
     }
 
