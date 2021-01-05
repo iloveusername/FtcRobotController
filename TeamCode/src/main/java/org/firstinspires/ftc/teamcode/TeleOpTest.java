@@ -1,9 +1,15 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 @TeleOp(name="TeleOp Mark I", group="Basic")
 public class TeleOpTest extends LinearOpMode {
@@ -11,6 +17,10 @@ public class TeleOpTest extends LinearOpMode {
     private DcMotor rightDrive = null;
     private DcMotor BleftDrive = null;
     private DcMotor BrightDrive = null;
+
+    //This is the onboard gyroscope, pretty neat.
+    BNO055IMU imu;
+    Orientation angles;
 
     //This is a ratio for ratio things. About 2000 Encoder Ticks to a 90 Degree Turn. Default is ~22, Adjust to deal with encoder loss if needed. 1620 ticks for one meter, I think. I don't have a meter stick, so who really knows.
     static final double rotToEncoder = 2065 / 90;
@@ -28,7 +38,12 @@ public class TeleOpTest extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-
+        //This sets up the gryoscope for use.
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        parameters.calibrationDataFile = "BNO055IMUCalibration.json";
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        imu.initialize(parameters);
 
         waitForStart();
 
@@ -45,6 +60,9 @@ public class TeleOpTest extends LinearOpMode {
         wheelDirection("up");
 
         while (opModeIsActive()) {
+
+            //Gyro Stuff
+            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
             double stickX = gamepad1.left_stick_x;
             double stickY = -gamepad1.left_stick_y;
@@ -92,15 +110,15 @@ public class TeleOpTest extends LinearOpMode {
                 case "tiltRight":
                     wheelDirection("up");
                     leftDrive.setPower(stickY);
-                    rightDrive.setPower(stickY * 0.6);
+                    rightDrive.setPower(stickY * 0.3);
                     BleftDrive.setPower(stickY);
-                    BrightDrive.setPower(stickY * 0.6);
+                    BrightDrive.setPower(stickY * 0.3);
                     break;
                 case "tiltLeft":
                     wheelDirection("up");
-                    leftDrive.setPower(stickY * 0.6);
+                    leftDrive.setPower(stickY * 0.3);
                     rightDrive.setPower(stickY);
-                    BleftDrive.setPower(stickY * 0.6);
+                    BleftDrive.setPower(stickY * 0.3);
                     BrightDrive.setPower(stickY);
                     break;
 
