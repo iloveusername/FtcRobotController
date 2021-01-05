@@ -33,6 +33,8 @@ public class TeleOpTest extends LinearOpMode {
     boolean trackEncoders = false;
     boolean doneTurn = false;
 
+    //Sets up a checkpoint system.
+
     //Sets Up The State Machine
     String roboState = "drive";
 
