@@ -30,7 +30,8 @@ public class TeleOpTest extends LinearOpMode {
     double currentAngle = 0;
     double currentX = 0;
     double currentY = 0;
-    double previousEncoder = 0;
+    boolean trackEncoders = false;
+    boolean doneTurn = false;
 
     //Sets Up The State Machine
     String roboState = "drive";
@@ -63,23 +64,31 @@ public class TeleOpTest extends LinearOpMode {
         BleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         BrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-
         wheelDirection("up");
 
         while (opModeIsActive()) {
 
             resetDrive();
 
-
             //Gyro Stuff
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-            currentAngle = -angles.firstAngle;
+            currentAngle = Math.round(-angles.firstAngle);
 
             double stickX = gamepad1.left_stick_x;
             double stickY = -gamepad1.left_stick_y;
 
             if(gamepad1.a){
-                goToTarget(0.5,0.5,0.5);
+                if(doneTurn){
+                    resetCount();
+                }
+                doneTurn = false;
+                currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
+                currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
+                currentY = (double) Math.round(currentY * 100) / 100;
+                currentX = (double) Math.round(currentX * 100) / 100;
+                stickX = 0;
+                stickY = 0;
+                resetCount();
 
             }
             if(gamepad1.b){
@@ -90,7 +99,14 @@ public class TeleOpTest extends LinearOpMode {
                 rotateToAngle(currentAngle - 90);
 
             }
-
+            if(gamepad1.y){
+                resetCount();
+                goToOrigin(0.5);
+            }
+            if(gamepad1.left_bumper){
+                resetCount();
+                goToCoordinates(1,1,0.5);
+            }
             if(gamepad1.a){
                 stickX *= 0.5;
                 stickY *= 0.5;
@@ -116,8 +132,26 @@ public class TeleOpTest extends LinearOpMode {
                 roboState = "drive";
             }
 
+            if(stickX == 0 && stickY == 0){
+                if(doneTurn){
+                    resetCount();
+                }
+                doneTurn = false;
+                currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
+                currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
+                currentY = (double) Math.round(currentY * 100) / 100;
+                currentX = (double) Math.round(currentX * 100) / 100;
+
+                resetCount();
+            }
+
             switch (roboState){
                 case "drive":
+                    if(doneTurn){
+                        resetCount();
+                    }
+                    doneTurn = false;
+                    trackEncoders = true;
                     wheelDirection("up");
                     leftDrive.setPower(stickY);
                     rightDrive.setPower(stickY);
@@ -125,15 +159,19 @@ public class TeleOpTest extends LinearOpMode {
                     BrightDrive.setPower(stickY);
                     break;
                 case "turn":
-                    leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                    rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                    BleftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                    BrightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    if(trackEncoders){
+                        currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
+                        currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
+                        currentY = (double) Math.round(currentY * 100) / 100;
+                        currentX = (double) Math.round(currentX * 100) / 100;
+                    }
+                    trackEncoders = false;
                     wheelDirection("turnRight");
                     leftDrive.setPower(stickX);
                     rightDrive.setPower(stickX);
                     BleftDrive.setPower(stickX);
                     BrightDrive.setPower(stickX);
+                    doneTurn = true;
                     break;
 //                case "tiltRight":
 //                    wheelDirection("up");
@@ -153,17 +191,19 @@ public class TeleOpTest extends LinearOpMode {
             }
 
 
-            currentY += Math.cos(currentAngle) * (leftDrive.getCurrentPosition() - previousEncoder);
-            currentX += Math.sin(currentAngle) * (leftDrive.getCurrentPosition() - previousEncoder);
-            telemetry.addData("Stick X", stickX);
-            telemetry.addData("Stick Y", stickY);
+
+            //telemetry.addData("Stick X", stickX);
+            //telemetry.addData("Stick Y", stickY);
             telemetry.addData("Current Rot", currentAngle);
-            telemetry.addData("Current X", currentX/meterToEncoder);
-            telemetry.addData("Current Y", currentY/meterToEncoder);
-            telemetry.addData("State", roboState);
+            telemetry.addData("Done Turn?", doneTurn);
+            telemetry.addData("Count Encoders?", trackEncoders);
+            telemetry.addData("Current X", currentX);
+//            telemetry.addData("Angle Sine", Math.sin(currentAngle * Math.PI/180));
+            telemetry.addData("Current Y", currentY);
+//            telemetry.addData("Angle Cosine", Math.cos(currentAngle * Math.PI/180));
+           // telemetry.addData("State", roboState);
             telemetry.update();
 
-            previousEncoder = leftDrive.getCurrentPosition();
         }
     }
 
@@ -491,8 +531,8 @@ public class TeleOpTest extends LinearOpMode {
 
             //Updates current position and rotation.
             currentAngle = AngleOfTri;
-            currentX += targetX;
-            currentY += targetY;
+            currentX = 0;
+            currentY = 0;
 
             isDone = true;
         }
@@ -606,6 +646,13 @@ public class TeleOpTest extends LinearOpMode {
         rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         BleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         BrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
+    public void resetCount(){
+        leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        BleftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        BrightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 }
 
