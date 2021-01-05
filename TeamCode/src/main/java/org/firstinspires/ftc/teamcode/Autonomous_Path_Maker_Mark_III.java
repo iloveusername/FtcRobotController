@@ -235,8 +235,8 @@ public class Autonomous_Path_Maker_Mark_III extends LinearOpMode {
 
         //Updates current position and rotation.
         currentAngle = AngleOfTri;
-        currentX += targetX;
-        currentY += targetY;
+        currentX = coordX;
+        currentY = coordY;
 
         //Telemetry stuff for debugging.
         telemetry.addData("Angle Of Attack", AngleOfTri);
@@ -367,6 +367,8 @@ public class Autonomous_Path_Maker_Mark_III extends LinearOpMode {
 
         //Take your desired angle, subtract your current. Convert to encoders, and spin till you get to where you wanna be.
         encoderDrive((int) Math.round((angle*rotToEncoder) - (currentAngle*rotToEncoder)), desiredSpeed);
+
+        currentAngle = angle;
 
     }
 
