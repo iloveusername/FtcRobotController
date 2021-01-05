@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -11,8 +10,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
-@TeleOp(name="TeleOp Mark I", group="Basic")
-public class TeleOpTest extends LinearOpMode {
+@TeleOp(name="TeleOp Mark II", group="Basic")
+public class TeleOp_Mark_II extends LinearOpMode {
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
     private DcMotor BleftDrive = null;
@@ -78,126 +77,83 @@ public class TeleOpTest extends LinearOpMode {
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
             currentAngle = Math.round(-angles.firstAngle);
 
+            //This just lets me type less.
             double stickX = gamepad1.left_stick_x;
             double stickY = -gamepad1.left_stick_y;
 
+            //Gamepad Button Stuff
             if(gamepad1.a){
+                stickX *= 0;
+                stickY *= 0;
                 if(doneTurn){
                     resetCount();
+                    doneTurn = false;
                 }
-                doneTurn = false;
+                //If we break, it'll measure our current position.
                 currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentY = (double) Math.round(currentY * 100) / 100;
                 currentX = (double) Math.round(currentX * 100) / 100;
-                stickX = 0;
-                stickY = 0;
-                resetCount();
-
             }
+
             if(gamepad1.b){
                 rotateToAngle(0);
-
-            }
-            if(gamepad1.x){
-                rotateToAngle(currentAngle - 90);
-
             }
             if(gamepad1.y){
                 resetCount();
                 goToOrigin(0.5);
             }
+            //Sets the checkpoint based on current position
             if(gamepad1.left_bumper){
                 checkX = currentX;
                 checkY = currentY;
             }
-            if(gamepad1.a){
-                stickX *= 0.5;
-                stickY *= 0.5;
-            }
-            if(gamepad1.b){
-                stickX *= 0;
-                stickY *= 0;
-            }
+            //Finds the shortest path to the checkpoint, rotates, then moves to it. 
             if(gamepad1.right_bumper){
                 resetCount();
                 goToCoordinates(checkX, checkY,0.5);
             }
 
-            //Current State Detector
-            if(Math.abs(stickX) > 0.25){
-                roboState = "turn";
-//                if(Math.abs(stickY) > 0.25){
-//                    if(stickX > 0.25){
-//                        roboState = "tiltRight";
-//                    }
-//                    if(stickX < -0.25){
-//                        roboState = "tiltLeft";
-//                    }
-//                }
+            if(stickX > 0.35 || stickX < -0.35){
+                if(trackEncoders){
+                    currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
+                    currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
+                    currentY = (double) Math.round(currentY * 100) / 100;
+                    currentX = (double) Math.round(currentX * 100) / 100;
+                    trackEncoders = false;
+                }
+                wheelDirection("turnRight");
+                leftDrive.setPower(stickX);
+                rightDrive.setPower(stickX);
+                BleftDrive.setPower(stickX);
+                BrightDrive.setPower(stickX);
+                doneTurn = true;
             }
-            else{
-                roboState = "drive";
-            }
-
-            if(stickX == 0 && stickY == 0){
+            if(stickX < 0.35 && stickX > -0.35 && stickY < 0.35 && stickY > -0.35){
                 if(doneTurn){
                     resetCount();
+                    doneTurn = false;
                 }
-                doneTurn = false;
+                //If we let go of the joystick, it'll measure our current position.
                 currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentY = (double) Math.round(currentY * 100) / 100;
                 currentX = (double) Math.round(currentX * 100) / 100;
-
-                resetCount();
+            }
+            else{
+                trackEncoders = true;
+                if(doneTurn){
+                    resetCount();
+                    doneTurn = false;
+                }
+                trackEncoders = true;
+                wheelDirection("up");
+                leftDrive.setPower(stickY);
+                rightDrive.setPower(stickY);
+                BleftDrive.setPower(stickY);
+                BrightDrive.setPower(stickY);
             }
 
-            switch (roboState){
-                case "drive":
-                    if(doneTurn){
-                        resetCount();
-                        doneTurn = false;
-                    }
-                    trackEncoders = true;
-                    wheelDirection("up");
-                    leftDrive.setPower(stickY);
-                    rightDrive.setPower(stickY);
-                    BleftDrive.setPower(stickY);
-                    BrightDrive.setPower(stickY);
-                    break;
-                case "turn":
-                    if(trackEncoders){
-                        currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
-                        currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
-                        currentY = (double) Math.round(currentY * 100) / 100;
-                        currentX = (double) Math.round(currentX * 100) / 100;
-                        trackEncoders = false;
-                    }
-                    trackEncoders = false;
-                    wheelDirection("turnRight");
-                    leftDrive.setPower(stickX);
-                    rightDrive.setPower(stickX);
-                    BleftDrive.setPower(stickX);
-                    BrightDrive.setPower(stickX);
-                    doneTurn = true;
-                    break;
-//                case "tiltRight":
-//                    wheelDirection("up");
-//                    leftDrive.setPower(stickY);
-//                    rightDrive.setPower(stickY * 0.3);
-//                    BleftDrive.setPower(stickY);
-//                    BrightDrive.setPower(stickY * 0.3);
-//                    break;
-//                case "tiltLeft":
-//                    wheelDirection("up");
-//                    leftDrive.setPower(stickY * 0.3);
-//                    rightDrive.setPower(stickY);
-//                    BleftDrive.setPower(stickY * 0.3);
-//                    BrightDrive.setPower(stickY);
-//                    break;
-
-            }
 
 
 
