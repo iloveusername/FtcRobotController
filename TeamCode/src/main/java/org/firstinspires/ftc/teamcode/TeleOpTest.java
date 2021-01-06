@@ -84,8 +84,8 @@ public class TeleOpTest extends LinearOpMode {
             if(gamepad1.a){
                 if(doneTurn){
                     resetCount();
+                    doneTurn = false;
                 }
-                doneTurn = false;
                 currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentY = (double) Math.round(currentY * 100) / 100;
@@ -136,11 +136,7 @@ public class TeleOpTest extends LinearOpMode {
 //                    }
 //                }
             }
-            else{
-                roboState = "drive";
-            }
-
-            if(stickX == 0 && stickY == 0){
+            else if(stickX == 0 && stickY == 0){
                 if(doneTurn){
                     resetCount();
                 }
@@ -152,6 +148,9 @@ public class TeleOpTest extends LinearOpMode {
 
                 resetCount();
             }
+            else{
+                roboState = "drive";
+            }
 
             switch (roboState){
                 case "drive":
@@ -159,6 +158,10 @@ public class TeleOpTest extends LinearOpMode {
                         resetCount();
                         doneTurn = false;
                     }
+                    leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    BleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    BrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                     trackEncoders = true;
                     wheelDirection("up");
                     leftDrive.setPower(stickY);
@@ -174,7 +177,10 @@ public class TeleOpTest extends LinearOpMode {
                         currentX = (double) Math.round(currentX * 100) / 100;
                         trackEncoders = false;
                     }
-                    trackEncoders = false;
+                    leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    BleftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    BrightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     wheelDirection("turnRight");
                     leftDrive.setPower(stickX);
                     rightDrive.setPower(stickX);
@@ -182,21 +188,6 @@ public class TeleOpTest extends LinearOpMode {
                     BrightDrive.setPower(stickX);
                     doneTurn = true;
                     break;
-//                case "tiltRight":
-//                    wheelDirection("up");
-//                    leftDrive.setPower(stickY);
-//                    rightDrive.setPower(stickY * 0.3);
-//                    BleftDrive.setPower(stickY);
-//                    BrightDrive.setPower(stickY * 0.3);
-//                    break;
-//                case "tiltLeft":
-//                    wheelDirection("up");
-//                    leftDrive.setPower(stickY * 0.3);
-//                    rightDrive.setPower(stickY);
-//                    BleftDrive.setPower(stickY * 0.3);
-//                    BrightDrive.setPower(stickY);
-//                    break;
-
             }
 
 
