@@ -41,6 +41,9 @@ public class TeleOpTest extends LinearOpMode {
     //Sets Up The State Machine
     String roboState = "drive";
 
+    //Detects last movement button pressed for an if statement.
+    String lastPressed;
+
 
     @Override
     public void runOpMode() {
@@ -74,6 +77,10 @@ public class TeleOpTest extends LinearOpMode {
         while (opModeIsActive()) {
 
             resetDrive();
+
+            if(lastPressed != lastPressed){
+                telemetry.addData("Switch", "Successful");
+            }
 
             //Gyro Stuff
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
@@ -175,10 +182,35 @@ public class TeleOpTest extends LinearOpMode {
                 resetCount();
                 canDo = true;
             }
-            else{
+            else if(!gamepad1.dpad_down || !gamepad1.dpad_up || !gamepad1.dpad_left || !gamepad1.dpad_right){
                 roboState = "drive";
                 canDo = false;
             }
+            else if(gamepad1.dpad_up && gamepad1.dpad_right){
+                lastPressed = "upright";
+            }
+            else if(gamepad1.dpad_up && gamepad1.dpad_left){
+                lastPressed = "upleft";
+            }
+            else if(gamepad1.dpad_down && gamepad1.dpad_right){
+                lastPressed = "downright";
+            }
+            else if(gamepad1.dpad_down && gamepad1.dpad_left){
+                lastPressed = "downleft";
+            }
+            else if(gamepad1.dpad_down){
+                lastPressed = "down";
+            }
+            else if(gamepad1.dpad_up){
+                lastPressed = "up";
+            }
+            else if(gamepad1.dpad_right){
+                lastPressed = "right";
+            }
+            else if(gamepad1.dpad_left){
+                lastPressed = "left";
+            }
+
 
             //Depending on the state of the robot, do different things. This one is straightforward enough.
             switch (roboState){
@@ -217,6 +249,8 @@ public class TeleOpTest extends LinearOpMode {
                     BrightDrive.setPower(stickX);
                     doneTurn = true;
                     break;
+                case "dpad":
+                    break;
             }
 
 
@@ -224,6 +258,7 @@ public class TeleOpTest extends LinearOpMode {
             //telemetry.addData("Stick X", stickX);
             //telemetry.addData("Stick Y", stickY);
             telemetry.addData("Can Do?", canDo);
+            telemetry.addData("Last Pressed", lastPressed);
             telemetry.addData("Current Rot", currentAngle);
             telemetry.addData("Count Encoders?", trackEncoders);
             telemetry.addData("Current X", currentX);
