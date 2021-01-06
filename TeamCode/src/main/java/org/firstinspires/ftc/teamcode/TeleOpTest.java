@@ -658,7 +658,7 @@ public class TeleOpTest extends LinearOpMode {
         BrightDrive.setPower(desiredSpeed);
 
         while(leftDrive.isBusy() || rightDrive.isBusy() || BleftDrive.isBusy() || BrightDrive.isBusy()){
-            //If we press Y, it should abort whatever sequence it is in an hopefully leave us with a decently accurate position.
+            //If we press Y, it should abort whatever sequence it is in, and hopefully leave us with a decently accurate position.
             if(gamepad1.y){
                 currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
