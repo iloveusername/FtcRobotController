@@ -108,13 +108,17 @@ public class TeleOpTest extends LinearOpMode {
                 rotateToAngle(currentAngle + 90);
 
             }
-            if(gamepad1.y && canDo){
+            if(gamepad1.back && canDo){
                 resetCount();
                 goToOrigin(0.75);
             }
             if(gamepad1.left_bumper && canDo){
                 checkX = currentX;
                 checkY = currentY;
+            }
+            if(gamepad1.left_stick_button && gamepad1.right_stick_button && canDo){
+                currentX = 0;
+                currentY = 0;
             }
             if(gamepad1.a){
                 stickX *= 0.5;
@@ -130,8 +134,8 @@ public class TeleOpTest extends LinearOpMode {
             }
             if(gamepad1.start && canDo){
                 resetCount();
-                goToCoordinates(1, 1,0.75);
-                goToCoordinates(-1, 1,0.75);
+                goToCoordinates(0.5, 0.5,0.75);
+                goToCoordinates(-0.5, 0.5,0.75);
                 goToCoordinates(0, 0,0.75);
                 rotateToAngle(0);
             }
@@ -195,7 +199,7 @@ public class TeleOpTest extends LinearOpMode {
                     doneTurn = true;
                     break;
             }
-            
+
             //telemetry.addData("Stick X", stickX);
             //telemetry.addData("Stick Y", stickY);
             telemetry.addData("Can Do?", canDo);
@@ -633,6 +637,14 @@ public class TeleOpTest extends LinearOpMode {
         BrightDrive.setPower(desiredSpeed);
 
         while(leftDrive.isBusy() || rightDrive.isBusy() || BleftDrive.isBusy() || BrightDrive.isBusy()){
+            if(gamepad1.y){
+                currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
+                currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
+                currentY = (double) Math.round(currentY * 100) / 100;
+                currentX = (double) Math.round(currentX * 100) / 100;
+                resetCount();
+                break;
+            }
         }
 
         leftDrive.setPower(0);
