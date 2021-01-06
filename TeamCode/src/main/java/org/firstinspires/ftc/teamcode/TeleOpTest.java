@@ -79,27 +79,37 @@ public class TeleOpTest extends LinearOpMode {
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
             currentAngle = Math.round(-angles.firstAngle);
 
+            //This just saved me sometime by having to type less.
             double stickX = gamepad1.left_stick_x;
             double stickY = -gamepad1.left_stick_y;
 
+            //Pressing A will both break and save our position.
             if(gamepad1.a){
                 if(doneTurn){
                     resetCount();
                     doneTurn = false;
                 }
+
+                //Since we only move in straight lines, we can take the total encoder count during that period, then multiple it by the sin or cosine of whatever angle we were facing to find X and Y values relative to origin.
                 currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentY = (double) Math.round(currentY * 100) / 100;
                 currentX = (double) Math.round(currentX * 100) / 100;
+
+                //This just breaks.
                 stickX = 0;
                 stickY = 0;
                 resetCount();
 
             }
+
+            //Pressing B will reset our angle to what it started at.
             if(gamepad1.b){
                 rotateToAngle(0);
 
             }
+
+            //Rotate 90 Degrees left of right depending on input.
             if(gamepad1.x && gamepad1.dpad_left){
                 rotateToAngle(currentAngle - 90);
 
@@ -108,30 +118,38 @@ public class TeleOpTest extends LinearOpMode {
                 rotateToAngle(currentAngle + 90);
 
             }
+
+            //If we press the back button, we will return to origin.
             if(gamepad1.back && canDo){
                 resetCount();
                 goToOrigin(0.75);
             }
+
+            //Drops a checkpoint.
             if(gamepad1.left_bumper && canDo){
                 checkX = currentX;
                 checkY = currentY;
             }
+
+            //Resets your origin to where you currently are.
             if(gamepad1.left_stick_button && gamepad1.right_stick_button && canDo){
                 currentX = 0;
                 currentY = 0;
             }
-            if(gamepad1.a){
+
+            //Holding B cuts speed in half for percision and whatnot.
+            if(gamepad1.b){
                 stickX *= 0.5;
                 stickY *= 0.5;
             }
-            if(gamepad1.b){
-                stickX *= 0;
-                stickY *= 0;
-            }
+
+            //Pressing the right bumper will bring us to our dropped checkpoint.
             if(gamepad1.right_bumper && canDo){
                 resetCount();
                 goToCoordinates(checkX, checkY,0.75);
             }
+
+            //This is just a predetermined autonomous path we can take if we press Start. We can adjust to whatever we want.
             if(gamepad1.start && canDo){
                 resetCount();
                 goToCoordinates(0.5, 0.5,0.75);
@@ -140,7 +158,7 @@ public class TeleOpTest extends LinearOpMode {
                 rotateToAngle(0);
             }
 
-            //Current State Detector
+            //Figures if we should be in a turning state, stand still, or driving state depending on our joystick's position.
             if(Math.abs(stickX) > 0.25){
                 roboState = "turn";
             }
@@ -162,6 +180,7 @@ public class TeleOpTest extends LinearOpMode {
                 canDo = false;
             }
 
+            //Depending on the state of the robot, do different things. This one is straightforward enough.
             switch (roboState){
                 case "drive":
                     if(doneTurn){
@@ -200,6 +219,8 @@ public class TeleOpTest extends LinearOpMode {
                     break;
             }
 
+
+            //All of your telemetry desires can be fulfilled here.
             //telemetry.addData("Stick X", stickX);
             //telemetry.addData("Stick Y", stickY);
             telemetry.addData("Can Do?", canDo);
@@ -637,6 +658,7 @@ public class TeleOpTest extends LinearOpMode {
         BrightDrive.setPower(desiredSpeed);
 
         while(leftDrive.isBusy() || rightDrive.isBusy() || BleftDrive.isBusy() || BrightDrive.isBusy()){
+            //If we press Y, it should abort whatever sequence it is in an hopefully leave us with a decently accurate position.
             if(gamepad1.y){
                 currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
