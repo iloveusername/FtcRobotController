@@ -105,7 +105,7 @@ public class TeleOpTest extends LinearOpMode {
             }
             if(gamepad1.y){
                 resetCount();
-                goToOrigin(0.5);
+                goToOrigin(0.75);
             }
             if(gamepad1.left_bumper){
                 checkX = currentX;
@@ -121,7 +121,7 @@ public class TeleOpTest extends LinearOpMode {
             }
             if(gamepad1.right_bumper){
                 resetCount();
-                goToCoordinates(checkX, checkY,0.5);
+                goToCoordinates(checkX, checkY,0.75);
             }
 
             //Current State Detector
@@ -406,7 +406,7 @@ public class TeleOpTest extends LinearOpMode {
         //Turns the robot using encoders for accuracy. Adjust speed if you want.
         int encoderTurn = (int) Math.round(((AngleOfTri - currentAngle)*rotToEncoder));
         encoderTurn = Math.abs(encoderTurn);
-        encoderDrive(encoderTurn, 0.5);
+        encoderDrive(encoderTurn, 0.75);
 
         //Moves the robot forward for the distance of the hypotenuse.
         wheelDirection("up");
@@ -515,7 +515,7 @@ public class TeleOpTest extends LinearOpMode {
             //Turns the robot using encoders for accuracy. Adjust speed if you want.
             int encoderTurn = (int) Math.round(((AngleOfTri - currentAngle)*rotToEncoder));
             encoderTurn = Math.abs(encoderTurn);
-            encoderDrive(encoderTurn, 0.5);
+            encoderDrive(encoderTurn, 0.75);
 
             //Moves the robot forward for the distance of the hypotenuse.
             wheelDirection("down");
@@ -555,7 +555,7 @@ public class TeleOpTest extends LinearOpMode {
             //Turns the robot using encoders for accuracy. Adjust speed if you want.
             int encoderTurn = (int) Math.round(((angle - currentAngle) * rotToEncoder));
             encoderTurn = Math.abs(encoderTurn);
-            encoderDrive(encoderTurn, 0.5);
+            encoderDrive(encoderTurn, 0.75);
 
             isDone = true;
         }
