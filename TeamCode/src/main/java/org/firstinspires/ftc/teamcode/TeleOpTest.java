@@ -32,6 +32,7 @@ public class TeleOpTest extends LinearOpMode {
     double currentY = 0;
     boolean trackEncoders = false;
     boolean doneTurn = false;
+    boolean canDo = false;
 
     //Sets up a checkpoint system.
     double checkX = 0;
@@ -99,15 +100,19 @@ public class TeleOpTest extends LinearOpMode {
                 rotateToAngle(0);
 
             }
-            if(gamepad1.x){
+            if(gamepad1.x && gamepad1.dpad_left){
                 rotateToAngle(currentAngle - 90);
 
             }
-            if(gamepad1.y){
+            if(gamepad1.x && gamepad1.dpad_right){
+                rotateToAngle(currentAngle + 90);
+
+            }
+            if(gamepad1.y && canDo){
                 resetCount();
                 goToOrigin(0.75);
             }
-            if(gamepad1.left_bumper){
+            if(gamepad1.left_bumper && canDo){
                 checkX = currentX;
                 checkY = currentY;
             }
@@ -119,22 +124,21 @@ public class TeleOpTest extends LinearOpMode {
                 stickX *= 0;
                 stickY *= 0;
             }
-            if(gamepad1.right_bumper){
+            if(gamepad1.right_bumper && canDo){
                 resetCount();
                 goToCoordinates(checkX, checkY,0.75);
+            }
+            if(gamepad1.start && canDo){
+                resetCount();
+                goToCoordinates(1, 1,0.75);
+                goToCoordinates(-1, 1,0.75);
+                goToCoordinates(0, 0,0.75);
+                rotateToAngle(0);
             }
 
             //Current State Detector
             if(Math.abs(stickX) > 0.25){
                 roboState = "turn";
-//                if(Math.abs(stickY) > 0.25){
-//                    if(stickX > 0.25){
-//                        roboState = "tiltRight";
-//                    }
-//                    if(stickX < -0.25){
-//                        roboState = "tiltLeft";
-//                    }
-//                }
             }
             else if(stickX == 0 && stickY == 0){
                 if(doneTurn){
@@ -147,9 +151,11 @@ public class TeleOpTest extends LinearOpMode {
                 currentX = (double) Math.round(currentX * 100) / 100;
 
                 resetCount();
+                canDo = true;
             }
             else{
                 roboState = "drive";
+                canDo = false;
             }
 
             switch (roboState){
@@ -189,21 +195,19 @@ public class TeleOpTest extends LinearOpMode {
                     doneTurn = true;
                     break;
             }
-
-
-
+            
             //telemetry.addData("Stick X", stickX);
             //telemetry.addData("Stick Y", stickY);
+            telemetry.addData("Can Do?", canDo);
             telemetry.addData("Current Rot", currentAngle);
-            telemetry.addData("Done Turn?", doneTurn);
             telemetry.addData("Count Encoders?", trackEncoders);
             telemetry.addData("Current X", currentX);
-//            telemetry.addData("Angle Sine", Math.sin(currentAngle * Math.PI/180));
             telemetry.addData("Current Y", currentY);
             telemetry.addData("Checkpoint X", checkX);
             telemetry.addData("Checkpoint Y", checkY);
+//            telemetry.addData("Angle Sine", Math.sin(currentAngle * Math.PI/180));
 //            telemetry.addData("Angle Cosine", Math.cos(currentAngle * Math.PI/180));
-           // telemetry.addData("State", roboState);
+//            telemetry.addData("State", roboState);
             telemetry.update();
 
         }
