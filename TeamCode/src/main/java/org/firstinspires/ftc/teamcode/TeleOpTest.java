@@ -41,9 +41,6 @@ public class TeleOpTest extends LinearOpMode {
     //Sets Up The State Machine
     String roboState = "drive";
 
-    //Detects last movement button pressed for an if statement.
-    String lastPressed;
-
 
     @Override
     public void runOpMode() {
@@ -78,10 +75,6 @@ public class TeleOpTest extends LinearOpMode {
 
             resetDrive();
 
-            if(lastPressed != lastPressed){
-                telemetry.addData("Switch", "Successful");
-            }
-
             //Gyro Stuff
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
             currentAngle = Math.round(-angles.firstAngle);
@@ -98,6 +91,7 @@ public class TeleOpTest extends LinearOpMode {
                 }
 
                 //Since we only move in straight lines, we can take the total encoder count during that period, then multiple it by the sin or cosine of whatever angle we were facing to find X and Y values relative to origin.
+                currentAngle = Math.round(-angles.firstAngle);
                 currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentY = (double) Math.round(currentY * 100) / 100;
@@ -174,6 +168,7 @@ public class TeleOpTest extends LinearOpMode {
                     resetCount();
                 }
                 doneTurn = false;
+                currentAngle = Math.round(-angles.firstAngle);
                 currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentY = (double) Math.round(currentY * 100) / 100;
@@ -182,33 +177,9 @@ public class TeleOpTest extends LinearOpMode {
                 resetCount();
                 canDo = true;
             }
-            else if(!gamepad1.dpad_down || !gamepad1.dpad_up || !gamepad1.dpad_left || !gamepad1.dpad_right){
+            else{
                 roboState = "drive";
                 canDo = false;
-            }
-            else if(gamepad1.dpad_up && gamepad1.dpad_right){
-                lastPressed = "upright";
-            }
-            else if(gamepad1.dpad_up && gamepad1.dpad_left){
-                lastPressed = "upleft";
-            }
-            else if(gamepad1.dpad_down && gamepad1.dpad_right){
-                lastPressed = "downright";
-            }
-            else if(gamepad1.dpad_down && gamepad1.dpad_left){
-                lastPressed = "downleft";
-            }
-            else if(gamepad1.dpad_down){
-                lastPressed = "down";
-            }
-            else if(gamepad1.dpad_up){
-                lastPressed = "up";
-            }
-            else if(gamepad1.dpad_right){
-                lastPressed = "right";
-            }
-            else if(gamepad1.dpad_left){
-                lastPressed = "left";
             }
 
 
@@ -232,6 +203,7 @@ public class TeleOpTest extends LinearOpMode {
                     break;
                 case "turn":
                     if(trackEncoders){
+                        currentAngle = Math.round(-angles.firstAngle);
                         currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                         currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                         currentY = (double) Math.round(currentY * 100) / 100;
@@ -258,7 +230,6 @@ public class TeleOpTest extends LinearOpMode {
             //telemetry.addData("Stick X", stickX);
             //telemetry.addData("Stick Y", stickY);
             telemetry.addData("Can Do?", canDo);
-            telemetry.addData("Last Pressed", lastPressed);
             telemetry.addData("Current Rot", currentAngle);
             telemetry.addData("Count Encoders?", trackEncoders);
             telemetry.addData("Current X", currentX);
@@ -692,7 +663,7 @@ public class TeleOpTest extends LinearOpMode {
         BleftDrive.setPower(desiredSpeed);
         BrightDrive.setPower(desiredSpeed);
 
-        while(leftDrive.isBusy() || rightDrive.isBusy() || BleftDrive.isBusy() || BrightDrive.isBusy()){
+        while(leftDrive.isBusy() && rightDrive.isBusy() && BleftDrive.isBusy() && BrightDrive.isBusy()){
             //If we press Y, it should abort whatever sequence it is in, and hopefully leave us with a decently accurate position.
             if(gamepad1.y){
                 currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
