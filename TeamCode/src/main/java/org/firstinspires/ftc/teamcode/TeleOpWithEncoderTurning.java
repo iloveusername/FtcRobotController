@@ -10,7 +10,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
-@TeleOp(name="TeleOp Mark I", group="Basic")
+@TeleOp(name="TeleOp Mark II", group="Basic")
 public class TeleOpWithEncoderTurning extends LinearOpMode {
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
@@ -30,6 +30,7 @@ public class TeleOpWithEncoderTurning extends LinearOpMode {
     double currentX = 0;
     double currentY = 0;
     boolean trackEncoders = false;
+    boolean trackEndoersRotation = false;
     boolean doneTurn = false;
     boolean canDo = false;
 
@@ -76,7 +77,6 @@ public class TeleOpWithEncoderTurning extends LinearOpMode {
 
             //Gyro Stuff
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-            currentAngle = Math.round(-angles.firstAngle);
 
             //This just saved me sometime by having to type less.
             double stickX = gamepad1.left_stick_x;
@@ -84,13 +84,17 @@ public class TeleOpWithEncoderTurning extends LinearOpMode {
 
             //Pressing A will both break and save our position.
             if(gamepad1.a){
+                if(trackEndoersRotation){
+                    currentAngle += leftDrive.getCurrentPosition()/rotToEncoder;
+                    resetCount();
+                    trackEndoersRotation = false;
+                }
                 if(doneTurn){
                     resetCount();
                     doneTurn = false;
                 }
 
                 //Since we only move in straight lines, we can take the total encoder count during that period, then multiple it by the sin or cosine of whatever angle we were facing to find X and Y values relative to origin.
-                currentAngle = Math.round(-angles.firstAngle);
                 currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentY = (double) Math.round(currentY * 100) / 100;
@@ -138,7 +142,7 @@ public class TeleOpWithEncoderTurning extends LinearOpMode {
             }
 
             //Holding B cuts speed in half for percision and whatnot.
-            if(gamepad1.b){
+            if(gamepad1.x){
                 stickX *= 0.5;
                 stickY *= 0.5;
             }
@@ -163,11 +167,15 @@ public class TeleOpWithEncoderTurning extends LinearOpMode {
                 roboState = "turn";
             }
             else if(stickX == 0 && stickY == 0){
+                if(trackEndoersRotation){
+                    currentAngle += leftDrive.getCurrentPosition()/rotToEncoder;
+                    resetCount();
+                    trackEndoersRotation = false;
+                }
                 if(doneTurn){
                     resetCount();
                 }
                 doneTurn = false;
-                currentAngle = Math.round(-angles.firstAngle);
                 currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentY = (double) Math.round(currentY * 100) / 100;
@@ -185,14 +193,15 @@ public class TeleOpWithEncoderTurning extends LinearOpMode {
             //Depending on the state of the robot, do different things. This one is straightforward enough.
             switch (roboState){
                 case "drive":
+                    if(trackEndoersRotation){
+                        currentAngle += leftDrive.getCurrentPosition()/rotToEncoder;
+                        resetCount();
+                        trackEndoersRotation = false;
+                    }
                     if(doneTurn){
                         resetCount();
                         doneTurn = false;
                     }
-                    leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    BleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    BrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                     trackEncoders = true;
                     wheelDirection("up");
                     leftDrive.setPower(stickY);
@@ -202,17 +211,13 @@ public class TeleOpWithEncoderTurning extends LinearOpMode {
                     break;
                 case "turn":
                     if(trackEncoders){
-                        currentAngle = Math.round(-angles.firstAngle);
                         currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                         currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                         currentY = (double) Math.round(currentY * 100) / 100;
                         currentX = (double) Math.round(currentX * 100) / 100;
                         trackEncoders = false;
                     }
-                    leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                    rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                    BleftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                    BrightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    trackEndoersRotation = true;
                     wheelDirection("turnRight");
                     leftDrive.setPower(stickX);
                     rightDrive.setPower(stickX);
@@ -593,6 +598,7 @@ public class TeleOpWithEncoderTurning extends LinearOpMode {
 
             isDone = true;
         }
+        currentAngle = angle;
     }
 
     public void wheelDirection(String dir){
@@ -662,7 +668,7 @@ public class TeleOpWithEncoderTurning extends LinearOpMode {
         BleftDrive.setPower(desiredSpeed);
         BrightDrive.setPower(desiredSpeed);
 
-        while(leftDrive.isBusy() && rightDrive.isBusy() && BleftDrive.isBusy() && BrightDrive.isBusy()){
+        while(leftDrive.isBusy() || rightDrive.isBusy() || BleftDrive.isBusy() || BrightDrive.isBusy()){
             //If we press Y, it should abort whatever sequence it is in, and hopefully leave us with a decently accurate position.
             if(gamepad1.y){
                 currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;

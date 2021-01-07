@@ -138,8 +138,8 @@ public class TeleOpTest extends LinearOpMode {
                 currentY = 0;
             }
 
-            //Holding B cuts speed in half for percision and whatnot.
-            if(gamepad1.b){
+            //Holding X cuts speed in half for percision and whatnot.
+            if(gamepad1.x){
                 stickX *= 0.5;
                 stickY *= 0.5;
             }
