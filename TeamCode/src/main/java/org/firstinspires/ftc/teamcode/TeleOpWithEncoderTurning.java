@@ -22,7 +22,7 @@ public class TeleOpWithEncoderTurning extends LinearOpMode {
     Orientation angles;
 
     //This is a ratio for ratio things. About 2000 Encoder Ticks to a 90 Degree Turn. Default is ~22, Adjust to deal with encoder loss if needed. 1620 ticks for one meter, I think. I don't have a meter stick, so who really knows.
-    static final double rotToEncoder = 2065 / 90;
+    static final double rotToEncoder = 4062 / 180;
     static final double meterToEncoder = 1620;
 
     //Sets up odometry.
@@ -74,6 +74,13 @@ public class TeleOpWithEncoderTurning extends LinearOpMode {
         while (opModeIsActive()) {
 
             resetDrive();
+
+            if(currentAngle > 180){
+                currentAngle = -180 + (currentAngle - 180);
+            }
+            if(currentAngle < -180){
+                currentAngle = 180 - (currentAngle - 180);
+            }
 
             //Gyro Stuff
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
