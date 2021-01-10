@@ -20,7 +20,7 @@ public class Gamepad_Test extends LinearOpMode{
     private DcMotor BleftDrive = null;
     private DcMotor BrightDrive = null;
 
-    boolean doMove = false;
+    boolean doMove = true;
 
     double leftTurn = 1;
     double rightTurn = 1;
@@ -35,8 +35,10 @@ public class Gamepad_Test extends LinearOpMode{
     double derivOfFunct = 0;
 
     //Line Shit
-    double a = 2;
+    double a = 1;
     double b = Math.PI;
+    double c = 2;
+    double slopeToAngle = 0;
 
 
 
@@ -80,11 +82,19 @@ public class Gamepad_Test extends LinearOpMode{
 
         while(opModeIsActive()){
 
-            currentTime = ((System.currentTimeMillis() - startTime)/100000) - 1;
+            currentTime = ((System.currentTimeMillis() - startTime)/10000) - (a*0.5);
 
-            sinY = (a*Math.asin(currentTime))/b;
+//            currentTime = -1;
 
-            derivOfFunct = a/(b*Math.sqrt(1-(currentTime*currentTime)));
+            if(currentTime > a*0.5){
+                stop();
+            }
+
+            sinY = (a*Math.asin(c*currentTime))/b;
+
+            derivOfFunct = a/(b*Math.sqrt(1-((c*c) * (currentTime*currentTime))));
+
+            slopeToAngle = 90 - (Math.atan(derivOfFunct)*180/Math.PI);
 
             //Gyro Stuff
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
@@ -99,27 +109,34 @@ public class Gamepad_Test extends LinearOpMode{
                 }
             }
 
-            if(gamepad1.left_bumper){
-                adjustTurn -= 0.1;
-                sleep(500);
-            }
-            if(gamepad1.right_bumper){
-                adjustTurn += 0.1;
-                sleep(500);
-            }
+//            if(gamepad1.left_bumper){
+//                adjustTurn -= 0.1;
+//                sleep(500);
+//            }
+//            if(gamepad1.right_bumper){
+//                adjustTurn += 0.1;
+//                sleep(500);
+//            }
+//
+//            if(gamepad1.x){
+//                leftTurn = 0.5 + adjustTurn;
+//            }
+//            else{
+//                leftTurn = 1;
+//            }
+//            if(gamepad1.b){
+//                rightTurn = 0.5 + adjustTurn;
+//            }
+//            else{
+//                rightTurn = 1;
+//            }
 
-            if(gamepad1.x){
-                leftTurn = 0.5 + adjustTurn;
-            }
-            else{
-                leftTurn = 1;
-            }
-            if(gamepad1.b){
-                rightTurn = 0.5 + adjustTurn;
-            }
-            else{
-                rightTurn = 1;
-            }
+
+            if(currentAngle < slopeToAngle) rightTurn = 0;
+            else rightTurn = 1;
+            if(currentAngle > slopeToAngle) leftTurn = 0;
+            else leftTurn = 1;
+
 
             if(doMove){
                 leftDrive.setPower(-gamepad1.left_stick_y * leftTurn);
@@ -128,7 +145,7 @@ public class Gamepad_Test extends LinearOpMode{
                 BrightDrive.setPower(-gamepad1.left_stick_y * rightTurn);
             }
 
-//            telemetry.addData("Can Move?", doMove);
+            telemetry.addData("Can Move?", doMove);
 //            telemetry.addData("Current Angle?", currentAngle);
 //            telemetry.addData("Turn Adjust", adjustTurn);
 //            telemetry.addData("Left Y", gamepad1.left_stick_y);
@@ -138,6 +155,7 @@ public class Gamepad_Test extends LinearOpMode{
             telemetry.addData("Sin X", currentTime);
             telemetry.addData("Sin Y", sinY);
             telemetry.addData("Derivative", derivOfFunct);
+            telemetry.addData("Angle Of Line", slopeToAngle);
             telemetry.update();
         }
 
