@@ -141,8 +141,8 @@ public class TeleOpTest extends LinearOpMode {
 
             //Holding X cuts speed in half for percision and whatnot.
             if(gamepad1.x){
-                stickX *= 2;
-                stickY *= 2;
+                stickX *= 0.5;
+                stickY *= 0.5;
             }
 
             //Pressing the right bumper will bring us to our dropped checkpoint.

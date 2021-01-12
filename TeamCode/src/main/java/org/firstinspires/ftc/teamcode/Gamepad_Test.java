@@ -12,8 +12,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
-
-@Disabled
 @TeleOp(name="Gamepad Test", group="Basic")
 public class Gamepad_Test extends LinearOpMode{
     private DcMotor leftDrive = null;
@@ -85,15 +83,11 @@ public class Gamepad_Test extends LinearOpMode{
 
         while(opModeIsActive()){
 
-//            currentTime = ((System.currentTimeMillis() - startTime)/10000) - (a*0.5);
-
-////            currentTime = -1;
+            currentTime = ((System.currentTimeMillis() - startTime)/10000) - (1/c);
 
             if(currentTime > 0){
                 stop();
             }
-
-
 
             sinY = (a*Math.asin(currentTime))/b;
 
@@ -105,10 +99,25 @@ public class Gamepad_Test extends LinearOpMode{
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
             currentAngle = Math.round(-angles.firstAngle);
 
+            if(currentAngle < slopeToAngle){
+                rightTurn = 0;
+                if(currentAngle > (slopeToAngle - 10)){
+                    rightTurn = Math.abs((currentAngle - slopeToAngle)/5);
+                }
+            }
+            else rightTurn = 1;
+            if(currentAngle > slopeToAngle){
+                leftTurn = 0;
+                if(currentAngle < (slopeToAngle + 10)){
+                    leftTurn = Math.abs((currentAngle - slopeToAngle)/5);
+                }
+            }
+            else leftTurn = 1;
 
-            encoderDrive(300,1);
-
-            currentTime += 0.1;
+            leftDrive.setPower(0.5*leftTurn);
+            BleftDrive.setPower(0.5*leftTurn);
+            rightDrive.setPower(0.5*rightTurn);
+            BrightDrive.setPower(0.5*rightTurn);
 
 
 
@@ -119,6 +128,8 @@ public class Gamepad_Test extends LinearOpMode{
 //            telemetry.addData("Left Encoder", leftDrive.getCurrentPosition());
 //            telemetry.addData("Right Encoder", rightDrive.getCurrentPosition());
 //            telemetry.addData("Time", currentTime);
+            telemetry.addData("Left Turn", leftTurn);
+            telemetry.addData("Right Turn", rightTurn);
             telemetry.addData("Sin X", currentTime);
             telemetry.addData("Sin Y", sinY);
             telemetry.addData("Derivative", derivOfFunct);
@@ -128,70 +139,6 @@ public class Gamepad_Test extends LinearOpMode{
         }
 
 
-    }
-
-    public void encoderDrive(int desiredEncoder, double desiredSpeed){
-        leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        BleftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        BrightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        BleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        BrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        leftDrive.setTargetPosition(desiredEncoder);
-        rightDrive.setTargetPosition(desiredEncoder);
-        BleftDrive.setTargetPosition(desiredEncoder);
-        BrightDrive.setTargetPosition(desiredEncoder);
-
-        leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        BleftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        BrightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        leftDrive.setPower(desiredSpeed * leftTurn);
-        rightDrive.setPower(desiredSpeed * rightTurn);
-        BleftDrive.setPower(desiredSpeed * leftTurn);
-        BrightDrive.setPower(desiredSpeed * rightTurn);
-
-        while(leftDrive.isBusy() && rightDrive.isBusy() && BleftDrive.isBusy() && BrightDrive.isBusy()){
-            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-            currentAngle = Math.round(-angles.firstAngle);
-            if(currentAngle < slopeToAngle){
-                if(currentAngle < slopeToAngle){
-                    rightTurn = 1-((slopeToAngle - currentAngle)/10);
-                }
-                if(currentAngle < slopeToAngle - 10){
-                    rightTurn = 0;
-                }
-            }
-            else{
-                rightTurn = 1;
-            }
-            if(currentAngle > slopeToAngle){
-                if(currentAngle > slopeToAngle){
-                    leftTurn = 1-((slopeToAngle - currentAngle)/10);
-                }
-                if(currentAngle > slopeToAngle + 10){
-                    leftTurn = 0;
-                }
-            }
-            else{
-                leftTurn = 1;
-            }
-        }
-
-        leftDrive.setPower(0);
-        rightDrive.setPower(0);
-        BleftDrive.setPower(0);
-        BrightDrive.setPower(0);
-
-        leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        BleftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        BrightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 }
 
