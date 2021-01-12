@@ -29,6 +29,7 @@
 
 package org.firstinspires.ftc.teamcode.oldtests;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -36,6 +37,10 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
@@ -52,7 +57,7 @@ import java.util.List;
  * IMPORTANT: In order to use this OpMode, you need to obtain your own Vuforia license key as
  * is explained below.
  */
-@Disabled
+
 @TeleOp(name = "WebcamTest", group = "Concept")
 public class WebcamTest extends LinearOpMode {
     private static final String TFOD_MODEL_ASSET = "UltimateGoal.tflite";
@@ -67,6 +72,14 @@ public class WebcamTest extends LinearOpMode {
     static final double rotToEncoder = 2065 / 90;
 
     double currentAngle = 0;
+    double slopeToAngle = 0;
+
+    double leftTurn = 1;
+    double rightTurn = 1;
+
+    //This is the onboard gyroscope, pretty neat.
+    BNO055IMU imu;
+    Orientation angles;
     /*
      * IMPORTANT: You need to obtain your own license key to use Vuforia. The string below with which
      * 'parameters.vuforiaLicenseKey' is initialized is for illustration only, and will not function.
@@ -123,6 +136,14 @@ public class WebcamTest extends LinearOpMode {
         /** Wait for the game to begin */
         telemetry.addData(">", "Press Play to start op mode");
         telemetry.update();
+
+        //This sets up the gryoscope for use.
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        parameters.calibrationDataFile = "BNO055IMUCalibration.json";
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        imu.initialize(parameters);
+
         waitForStart();
         leftDrive = hardwareMap.get(DcMotor.class, "FL");
         rightDrive = hardwareMap.get(DcMotor.class, "FR");
@@ -145,8 +166,39 @@ public class WebcamTest extends LinearOpMode {
                       // step through the list of recognitions and display boundary info.
                       int i = 0;
                       for (Recognition recognition : updatedRecognitions) {
+
+                          //Gyro Stuff
+                          angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                          currentAngle = Math.round(-angles.firstAngle);
+
+                          slopeToAngle =  recognition.getLeft();
+
                           if(gamepad1.a){
-                              rotateToAngle(recognition.getLeft()/25);
+                              wheelDirection("turnRight");
+                              if(currentAngle < slopeToAngle){
+                                  rightTurn = 0;
+                                  if(currentAngle > (slopeToAngle - 10)){
+                                      rightTurn = 1 - Math.abs((currentAngle - slopeToAngle)/5);
+                                  }
+                              }
+                              else rightTurn = 1;
+                              if(currentAngle > slopeToAngle){
+                                  leftTurn = 0;
+                                  if(currentAngle < (slopeToAngle + 10)){
+                                      leftTurn = 1 - Math.abs((currentAngle - slopeToAngle)/5);
+                                  }
+                              }
+                              else leftTurn = 1;
+
+                              if(currentAngle > (slopeToAngle - 5) && currentAngle < (slopeToAngle + 5)){
+                                  leftTurn = 0;
+                                  rightTurn = 0;
+                              }
+
+                              leftDrive.setPower(1*leftTurn);
+                              BleftDrive.setPower(1*leftTurn);
+                              rightDrive.setPower(1*rightTurn);
+                              BrightDrive.setPower(1*rightTurn);
                           }
 
 
