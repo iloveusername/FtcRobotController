@@ -91,6 +91,7 @@ public class TeleOpTest extends LinearOpMode {
                 }
 
                 //Since we only move in straight lines, we can take the total encoder count during that period, then multiple it by the sin or cosine of whatever angle we were facing to find X and Y values relative to origin.
+                angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
                 currentAngle = Math.round(-angles.firstAngle);
                 currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
@@ -140,8 +141,8 @@ public class TeleOpTest extends LinearOpMode {
 
             //Holding X cuts speed in half for percision and whatnot.
             if(gamepad1.x){
-                stickX *= 0.5;
-                stickY *= 0.5;
+                stickX *= 2;
+                stickY *= 2;
             }
 
             //Pressing the right bumper will bring us to our dropped checkpoint.
@@ -168,6 +169,7 @@ public class TeleOpTest extends LinearOpMode {
                     resetCount();
                 }
                 doneTurn = false;
+                angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
                 currentAngle = Math.round(-angles.firstAngle);
                 currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
@@ -203,6 +205,7 @@ public class TeleOpTest extends LinearOpMode {
                     break;
                 case "turn":
                     if(trackEncoders){
+                        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
                         currentAngle = Math.round(-angles.firstAngle);
                         currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                         currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
@@ -666,6 +669,8 @@ public class TeleOpTest extends LinearOpMode {
         while(leftDrive.isBusy() || rightDrive.isBusy() || BleftDrive.isBusy() || BrightDrive.isBusy()){
             //If we press Y, it should abort whatever sequence it is in, and hopefully leave us with a decently accurate position.
             if(gamepad1.y){
+                angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                currentAngle = Math.round(-angles.firstAngle);
                 currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentY = (double) Math.round(currentY * 100) / 100;

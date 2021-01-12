@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -13,9 +11,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 
-@Disabled
-@TeleOp(name="Gamepad Test", group="Basic")
-public class Gamepad_Test extends LinearOpMode{
+@TeleOp(name="Gamer Stuff Test", group="Basic")
+public class Gamer_Test extends LinearOpMode{
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
     private DcMotor BleftDrive = null;
@@ -23,25 +20,13 @@ public class Gamepad_Test extends LinearOpMode{
 
     boolean doMove = true;
 
-    double leftTurn = 1;
-    double rightTurn = 1;
     double adjustTurn = 0;
 
     double currentAngle = 0;
 
-    double currentTime = -1;
-
     double encoderStep = -1;
 
-    double sinY = 0;
 
-    double derivOfFunct = 0;
-
-    //Line Shit
-    double a = 2;
-    double b = Math.PI;
-    double c = 1;
-    double slopeToAngle = 0;
 
 
 
@@ -85,52 +70,76 @@ public class Gamepad_Test extends LinearOpMode{
 
         while(opModeIsActive()){
 
-//            currentTime = ((System.currentTimeMillis() - startTime)/10000) - (a*0.5);
 
-////            currentTime = -1;
-
-            if(currentTime > 0){
-                stop();
-            }
-
-
-
-            sinY = (a*Math.asin(currentTime))/b;
-
-            derivOfFunct = a/(b*Math.sqrt(1-(currentTime*currentTime)));
-
-            slopeToAngle = 90 - (Math.atan(derivOfFunct)*180/Math.PI);
-
-            //Gyro Stuff
-            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-            currentAngle = Math.round(-angles.firstAngle);
-
-
-            encoderDrive(300,1);
-
-            currentTime += 0.1;
-
-
-
-//            telemetry.addData("Can Move?", doMove);
-//            telemetry.addData("Current Angle?", currentAngle);
-//            telemetry.addData("Turn Adjust", adjustTurn);
-//            telemetry.addData("Left Y", gamepad1.left_stick_y);
-//            telemetry.addData("Left Encoder", leftDrive.getCurrentPosition());
-//            telemetry.addData("Right Encoder", rightDrive.getCurrentPosition());
-//            telemetry.addData("Time", currentTime);
-            telemetry.addData("Sin X", currentTime);
-            telemetry.addData("Sin Y", sinY);
-            telemetry.addData("Derivative", derivOfFunct);
-            telemetry.addData("Angle Of Line", slopeToAngle);
-            telemetry.addData("Current Angle", currentAngle);
-            telemetry.update();
+            curveWithEncoders(2,Math.PI,1);
+            sleep(10000);
         }
 
 
     }
 
-    public void encoderDrive(int desiredEncoder, double desiredSpeed){
+
+
+    public void curveWithEncoders(double a, double b, double c){
+        boolean isDone = false;
+
+        double x= -1;
+        double sinY;
+        double derivOfFunct;
+        double slopeToAngle;
+        double turningDistance;
+        double leftRatio = 0;
+        double rightRatio = 0;
+
+        while(!isDone && opModeIsActive()){
+
+            sinY = (a*Math.asin(x))/b;
+            derivOfFunct = a/(b*Math.sqrt(1-(x*x)));
+            slopeToAngle = 90 - (Math.atan(derivOfFunct)*180/Math.PI);
+
+            //Gyro Stuff
+            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            currentAngle = Math.round(-angles.firstAngle);
+            turningDistance = slopeToAngle - currentAngle;
+
+            if(turningDistance < 20){
+                leftRatio = 1;
+                rightRatio = (turningDistance/-20) + 1.1;
+                if(rightRatio > 1 || turningDistance < 0){
+                    rightRatio = 1;
+                }
+
+            }
+            if(turningDistance > 20){
+                leftRatio = (turningDistance - 20)/20;
+                rightRatio = 0.1;
+            }
+
+
+            encoderDriveCurve(1000, 0.5, leftRatio, rightRatio);
+
+
+            x += 0.1;
+
+            telemetry.addData("Left", leftRatio);
+            telemetry.addData("Right", rightRatio);
+            telemetry.addData("Sin X", x);
+            telemetry.addData("Sin Y", sinY);
+            telemetry.addData("Derivative", derivOfFunct);
+            telemetry.addData("Angle Of Line", slopeToAngle);
+            telemetry.addData("Current Angle", currentAngle);
+            telemetry.update();
+
+            if(x > 0){
+                sleep(20000);
+            }
+
+        }
+
+
+    }
+
+    public void encoderDriveCurve(int desiredEncoder, double desiredSpeed, double left, double right){
         leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         BleftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -141,46 +150,22 @@ public class Gamepad_Test extends LinearOpMode{
         BleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         BrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        leftDrive.setTargetPosition(desiredEncoder);
-        rightDrive.setTargetPosition(desiredEncoder);
-        BleftDrive.setTargetPosition(desiredEncoder);
-        BrightDrive.setTargetPosition(desiredEncoder);
+        leftDrive.setTargetPosition((int) (desiredEncoder * left));
+        rightDrive.setTargetPosition((int) (desiredEncoder * right));
+        BleftDrive.setTargetPosition((int) (desiredEncoder * left));
+        BrightDrive.setTargetPosition((int) (desiredEncoder * right));
 
         leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         BleftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         BrightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        leftDrive.setPower(desiredSpeed * leftTurn);
-        rightDrive.setPower(desiredSpeed * rightTurn);
-        BleftDrive.setPower(desiredSpeed * leftTurn);
-        BrightDrive.setPower(desiredSpeed * rightTurn);
+        leftDrive.setPower(desiredSpeed);
+        rightDrive.setPower(desiredSpeed);
+        BleftDrive.setPower(desiredSpeed);
+        BrightDrive.setPower(desiredSpeed);
 
-        while(leftDrive.isBusy() && rightDrive.isBusy() && BleftDrive.isBusy() && BrightDrive.isBusy()){
-            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-            currentAngle = Math.round(-angles.firstAngle);
-            if(currentAngle < slopeToAngle){
-                if(currentAngle < slopeToAngle){
-                    rightTurn = 1-((slopeToAngle - currentAngle)/10);
-                }
-                if(currentAngle < slopeToAngle - 10){
-                    rightTurn = 0;
-                }
-            }
-            else{
-                rightTurn = 1;
-            }
-            if(currentAngle > slopeToAngle){
-                if(currentAngle > slopeToAngle){
-                    leftTurn = 1-((slopeToAngle - currentAngle)/10);
-                }
-                if(currentAngle > slopeToAngle + 10){
-                    leftTurn = 0;
-                }
-            }
-            else{
-                leftTurn = 1;
-            }
+        while(leftDrive.isBusy() || rightDrive.isBusy() || BleftDrive.isBusy() || BrightDrive.isBusy()){
         }
 
         leftDrive.setPower(0);

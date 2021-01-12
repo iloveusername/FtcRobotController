@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -10,8 +11,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
-
-@TeleOp(name="Gamepad Test", group="Basic")
+@Disabled
+@TeleOp(name="Arc Sine Test", group="Advanced")
 public class ArcSineTest extends LinearOpMode{
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
@@ -39,6 +40,10 @@ public class ArcSineTest extends LinearOpMode{
     double b = Math.PI;
     double c = 1;
     double slopeToAngle = 0;
+
+
+    //Bruh
+    double startE = 0;
 
 
 
@@ -86,26 +91,17 @@ public class ArcSineTest extends LinearOpMode{
 
 ////            currentTime = -1;
 
-            if(currentTime > 0){
-                stop();
-            }
 
 
 
-            sinY = (a*Math.asin(currentTime))/b;
-
-            derivOfFunct = a/(b*Math.sqrt(1-(currentTime*currentTime)));
-
-            slopeToAngle = 90 - (Math.atan(derivOfFunct)*180/Math.PI);
-
-            //Gyro Stuff
-            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-            currentAngle = Math.round(-angles.firstAngle);
 
 
-            encoderDrive(300,1);
 
-            currentTime += 0.1;
+
+
+            encoderDrive(3000,1);
+
+
 
 
 
@@ -154,8 +150,21 @@ public class ArcSineTest extends LinearOpMode{
         BrightDrive.setPower(desiredSpeed * rightTurn);
 
         while(leftDrive.isBusy() && rightDrive.isBusy() && BleftDrive.isBusy() && BrightDrive.isBusy()){
+
+            startE = leftDrive.getCurrentPosition();
+
+            currentTime = (leftDrive.getCurrentPosition()/1000) - 1;
+
+            sinY = (a*Math.asin(currentTime))/b;
+
+            derivOfFunct = a/(b*Math.sqrt(1-(currentTime*currentTime)));
+
+            slopeToAngle = 90 - (Math.atan(derivOfFunct)*180/Math.PI);
+
+            //Gyro Stuff
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
             currentAngle = Math.round(-angles.firstAngle);
+
             if(currentAngle < slopeToAngle){
                 if(currentAngle < slopeToAngle){
                     rightTurn = 1-((slopeToAngle - currentAngle)/10);
@@ -178,6 +187,9 @@ public class ArcSineTest extends LinearOpMode{
             else{
                 leftTurn = 1;
             }
+
+
+
         }
 
         leftDrive.setPower(0);
