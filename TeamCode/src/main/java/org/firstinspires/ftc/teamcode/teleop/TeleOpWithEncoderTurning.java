@@ -1,7 +1,7 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.teleop;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -11,8 +11,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
-@TeleOp(name="TeleOp Mark I", group="Basic")
-public class TeleOpTest extends LinearOpMode {
+@Disabled
+@TeleOp(name="TeleOp Mark II", group="Basic")
+public class TeleOpWithEncoderTurning extends LinearOpMode {
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
     private DcMotor BleftDrive = null;
@@ -23,7 +24,7 @@ public class TeleOpTest extends LinearOpMode {
     Orientation angles;
 
     //This is a ratio for ratio things. About 2000 Encoder Ticks to a 90 Degree Turn. Default is ~22, Adjust to deal with encoder loss if needed. 1620 ticks for one meter, I think. I don't have a meter stick, so who really knows.
-    static final double rotToEncoder = 2065 / 90;
+    static final double rotToEncoder = 4062 / 180;
     static final double meterToEncoder = 1620;
 
     //Sets up odometry.
@@ -31,6 +32,7 @@ public class TeleOpTest extends LinearOpMode {
     double currentX = 0;
     double currentY = 0;
     boolean trackEncoders = false;
+    boolean trackEndoersRotation = false;
     boolean doneTurn = false;
     boolean canDo = false;
 
@@ -75,9 +77,15 @@ public class TeleOpTest extends LinearOpMode {
 
             resetDrive();
 
+            if(currentAngle > 180){
+                currentAngle = -180 + (currentAngle - 180);
+            }
+            if(currentAngle < -180){
+                currentAngle = 180 - (currentAngle - 180);
+            }
+
             //Gyro Stuff
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-            currentAngle = Math.round(-angles.firstAngle);
 
             //This just saved me sometime by having to type less.
             double stickX = gamepad1.left_stick_x;
@@ -85,14 +93,17 @@ public class TeleOpTest extends LinearOpMode {
 
             //Pressing A will both break and save our position.
             if(gamepad1.a){
+                if(trackEndoersRotation){
+                    currentAngle += leftDrive.getCurrentPosition()/rotToEncoder;
+                    resetCount();
+                    trackEndoersRotation = false;
+                }
                 if(doneTurn){
                     resetCount();
                     doneTurn = false;
                 }
 
                 //Since we only move in straight lines, we can take the total encoder count during that period, then multiple it by the sin or cosine of whatever angle we were facing to find X and Y values relative to origin.
-                angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                currentAngle = Math.round(-angles.firstAngle);
                 currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentY = (double) Math.round(currentY * 100) / 100;
@@ -139,7 +150,7 @@ public class TeleOpTest extends LinearOpMode {
                 currentY = 0;
             }
 
-            //Holding X cuts speed in half for percision and whatnot.
+            //Holding B cuts speed in half for percision and whatnot.
             if(gamepad1.x){
                 stickX *= 0.5;
                 stickY *= 0.5;
@@ -165,12 +176,15 @@ public class TeleOpTest extends LinearOpMode {
                 roboState = "turn";
             }
             else if(stickX == 0 && stickY == 0){
+                if(trackEndoersRotation){
+                    currentAngle += leftDrive.getCurrentPosition()/rotToEncoder;
+                    resetCount();
+                    trackEndoersRotation = false;
+                }
                 if(doneTurn){
                     resetCount();
                 }
                 doneTurn = false;
-                angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                currentAngle = Math.round(-angles.firstAngle);
                 currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentY = (double) Math.round(currentY * 100) / 100;
@@ -188,14 +202,15 @@ public class TeleOpTest extends LinearOpMode {
             //Depending on the state of the robot, do different things. This one is straightforward enough.
             switch (roboState){
                 case "drive":
+                    if(trackEndoersRotation){
+                        currentAngle += leftDrive.getCurrentPosition()/rotToEncoder;
+                        resetCount();
+                        trackEndoersRotation = false;
+                    }
                     if(doneTurn){
                         resetCount();
                         doneTurn = false;
                     }
-                    leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    BleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    BrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                     trackEncoders = true;
                     wheelDirection("up");
                     leftDrive.setPower(stickY);
@@ -205,18 +220,13 @@ public class TeleOpTest extends LinearOpMode {
                     break;
                 case "turn":
                     if(trackEncoders){
-                        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                        currentAngle = Math.round(-angles.firstAngle);
                         currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                         currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                         currentY = (double) Math.round(currentY * 100) / 100;
                         currentX = (double) Math.round(currentX * 100) / 100;
                         trackEncoders = false;
                     }
-                    leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                    rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                    BleftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                    BrightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    trackEndoersRotation = true;
                     wheelDirection("turnRight");
                     leftDrive.setPower(stickX);
                     rightDrive.setPower(stickX);
@@ -597,6 +607,7 @@ public class TeleOpTest extends LinearOpMode {
 
             isDone = true;
         }
+        currentAngle = angle;
     }
 
     public void wheelDirection(String dir){
@@ -669,8 +680,6 @@ public class TeleOpTest extends LinearOpMode {
         while(leftDrive.isBusy() || rightDrive.isBusy() || BleftDrive.isBusy() || BrightDrive.isBusy()){
             //If we press Y, it should abort whatever sequence it is in, and hopefully leave us with a decently accurate position.
             if(gamepad1.y){
-                angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                currentAngle = Math.round(-angles.firstAngle);
                 currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentY = (double) Math.round(currentY * 100) / 100;

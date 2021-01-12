@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.teleop;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -11,8 +11,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
-@TeleOp(name="Multithread Test", group="Basic")
-public class Multithreading_Test extends LinearOpMode {
+@TeleOp(name="TeleOp Mark I", group="Basic")
+public class TeleOpTest extends LinearOpMode {
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
     private DcMotor BleftDrive = null;
@@ -45,8 +45,12 @@ public class Multithreading_Test extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-        Multithreading_Test myThread = new Multithreading_Test();
-        myThread.run();
+        //This sets up the gryoscope for use.
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        parameters.calibrationDataFile = "BNO055IMUCalibration.json";
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        imu.initialize(parameters);
 
         waitForStart();
 
@@ -65,13 +69,20 @@ public class Multithreading_Test extends LinearOpMode {
         BleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         BrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
+        leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        BleftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        BrightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         wheelDirection("up");
 
         while (opModeIsActive()) {
 
             resetDrive();
 
-
+            //Gyro Stuff
+            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            currentAngle = Math.round(-angles.firstAngle);
 
             //This just saved me sometime by having to type less.
             double stickX = gamepad1.left_stick_x;
@@ -84,6 +95,9 @@ public class Multithreading_Test extends LinearOpMode {
                     doneTurn = false;
                 }
 
+                //Since we only move in straight lines, we can take the total encoder count during that period, then multiple it by the sin or cosine of whatever angle we were facing to find X and Y values relative to origin.
+                angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                currentAngle = Math.round(-angles.firstAngle);
                 currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentY = (double) Math.round(currentY * 100) / 100;
@@ -151,7 +165,7 @@ public class Multithreading_Test extends LinearOpMode {
                 rotateToAngle(0);
             }
 
-            //Figures if we should be in a turning state, stand still, or driving state depending on our joystick's position.
+            //Determines if we should be in a turning state, stand still, or driving state depending on our joystick's position.
             if(Math.abs(stickX) > 0.25){
                 roboState = "turn";
             }
@@ -160,6 +174,8 @@ public class Multithreading_Test extends LinearOpMode {
                     resetCount();
                 }
                 doneTurn = false;
+                angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                currentAngle = Math.round(-angles.firstAngle);
                 currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentY = (double) Math.round(currentY * 100) / 100;
@@ -194,6 +210,8 @@ public class Multithreading_Test extends LinearOpMode {
                     break;
                 case "turn":
                     if(trackEncoders){
+                        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                        currentAngle = Math.round(-angles.firstAngle);
                         currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                         currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                         currentY = (double) Math.round(currentY * 100) / 100;
@@ -219,35 +237,18 @@ public class Multithreading_Test extends LinearOpMode {
             //All of your telemetry desires can be fulfilled here.
             //telemetry.addData("Stick X", stickX);
             //telemetry.addData("Stick Y", stickY);
-//            telemetry.addData("Can Do?", canDo);
-//            telemetry.addData("Current Rot", currentAngle);
-//            telemetry.addData("Count Encoders?", trackEncoders);
-//            telemetry.addData("Current X", currentX);
-//            telemetry.addData("Current Y", currentY);
-//            telemetry.addData("Checkpoint X", checkX);
-//            telemetry.addData("Checkpoint Y", checkY);
-////            telemetry.addData("Angle Sine", Math.sin(currentAngle * Math.PI/180));
-////            telemetry.addData("Angle Cosine", Math.cos(currentAngle * Math.PI/180));
-////            telemetry.addData("State", roboState);
-//            telemetry.update();
-
-        }
-    }
-
-    public void run(){
-        //This sets up the gryoscope for use.
-//        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-//        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
-//        parameters.calibrationDataFile = "BNO055IMUCalibration.json";
-//        imu = hardwareMap.get(BNO055IMU.class, "imu");
-//        imu.initialize(parameters);
-        while(opModeIsActive()){
-            //Gyro Stuff
-//            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-//            currentAngle = Math.round(-angles.firstAngle);
-            currentAngle += 1;
-            telemetry.addData("Current Angle", currentAngle);
+            telemetry.addData("Can Do?", canDo);
+            telemetry.addData("Current Rot", currentAngle);
+            telemetry.addData("Count Encoders?", trackEncoders);
+            telemetry.addData("Current X", currentX);
+            telemetry.addData("Current Y", currentY);
+            telemetry.addData("Checkpoint X", checkX);
+            telemetry.addData("Checkpoint Y", checkY);
+//            telemetry.addData("Angle Sine", Math.sin(currentAngle * Math.PI/180));
+//            telemetry.addData("Angle Cosine", Math.cos(currentAngle * Math.PI/180));
+//            telemetry.addData("State", roboState);
             telemetry.update();
+
         }
     }
 
@@ -263,7 +264,7 @@ public class Multithreading_Test extends LinearOpMode {
         //This Determines The Quadrant Of The Angle.
         if(targetX > 0){
             if(targetY > 0){
-                Quadrant = 1;
+               Quadrant = 1;
             }
             if(targetY < 0){
                 Quadrant = 4;
