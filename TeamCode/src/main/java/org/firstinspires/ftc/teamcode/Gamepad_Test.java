@@ -76,6 +76,11 @@ public class Gamepad_Test extends LinearOpMode{
         BleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         BrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
+        leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        BleftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        BrightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         leftDrive.setDirection(DcMotor.Direction.FORWARD);
         rightDrive.setDirection(DcMotor.Direction.REVERSE);
         BleftDrive.setDirection(DcMotor.Direction.FORWARD);
@@ -83,9 +88,13 @@ public class Gamepad_Test extends LinearOpMode{
 
         while(opModeIsActive()){
 
-            currentTime = ((System.currentTimeMillis() - startTime)/10000) - (1/c);
+            currentTime = ((System.currentTimeMillis() - startTime)/10000*6) - (1/c);
 
             if(currentTime > 0){
+                leftDrive.setPower(0);
+                BleftDrive.setPower(0);
+                rightDrive.setPower(0);
+                BrightDrive.setPower(0);
                 stop();
             }
 
@@ -102,22 +111,22 @@ public class Gamepad_Test extends LinearOpMode{
             if(currentAngle < slopeToAngle){
                 rightTurn = 0;
                 if(currentAngle > (slopeToAngle - 10)){
-                    rightTurn = Math.abs((currentAngle - slopeToAngle)/5);
+                    rightTurn = 1 - Math.abs((currentAngle - slopeToAngle)/5);
                 }
             }
             else rightTurn = 1;
             if(currentAngle > slopeToAngle){
                 leftTurn = 0;
                 if(currentAngle < (slopeToAngle + 10)){
-                    leftTurn = Math.abs((currentAngle - slopeToAngle)/5);
+                    leftTurn = 1 - Math.abs((currentAngle - slopeToAngle)/5);
                 }
             }
             else leftTurn = 1;
 
-            leftDrive.setPower(0.5*leftTurn);
-            BleftDrive.setPower(0.5*leftTurn);
-            rightDrive.setPower(0.5*rightTurn);
-            BrightDrive.setPower(0.5*rightTurn);
+            leftDrive.setPower(1*leftTurn);
+            BleftDrive.setPower(1*leftTurn);
+            rightDrive.setPower(1*rightTurn);
+            BrightDrive.setPower(1*rightTurn);
 
 
 
