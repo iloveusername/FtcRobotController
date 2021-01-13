@@ -91,6 +91,7 @@ public class TeleOpTest extends LinearOpMode {
             //Pressing A will both break and save our position.
             if(gamepad1.a){
                 if(doneTurn){
+                    sleep(50);
                     resetCount();
                     doneTurn = false;
                 }
@@ -171,6 +172,7 @@ public class TeleOpTest extends LinearOpMode {
             }
             else if(stickX == 0 && stickY == 0){
                 if(doneTurn){
+                    sleep(50);
                     resetCount();
                 }
                 doneTurn = false;
