@@ -82,7 +82,7 @@ public class TeleOpTest extends LinearOpMode {
 
             //Gyro Stuff
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-            currentAngle = Math.round(-angles.firstAngle);
+            currentAngle = -angles.firstAngle;
 
             //This just saved me sometime by having to type less.
             double stickX = gamepad1.left_stick_x;
@@ -98,7 +98,7 @@ public class TeleOpTest extends LinearOpMode {
 
                 //Since we only move in straight lines, we can take the total encoder count during that period, then multiple it by the sin or cosine of whatever angle we were facing to find X and Y values relative to origin.
                 angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                currentAngle = Math.round(-angles.firstAngle);
+                currentAngle = -angles.firstAngle;
                 currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentY = (double) Math.round(currentY * 100) / 100;
@@ -129,6 +129,8 @@ public class TeleOpTest extends LinearOpMode {
 
             //If we press the back button, we will return to origin.
             if(gamepad1.back && canDo){
+                angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                currentAngle = -angles.firstAngle;
                 resetCount();
                 goToOrigin(0.75);
             }
@@ -177,7 +179,7 @@ public class TeleOpTest extends LinearOpMode {
                 }
                 doneTurn = false;
                 angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                currentAngle = Math.round(-angles.firstAngle);
+                currentAngle = -angles.firstAngle;
                 currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentY = (double) Math.round(currentY * 100) / 100;
@@ -213,7 +215,7 @@ public class TeleOpTest extends LinearOpMode {
                 case "turn":
                     if(trackEncoders){
                         angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                        currentAngle = Math.round(-angles.firstAngle);
+                        currentAngle = -angles.firstAngle;
                         currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                         currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                         currentY = (double) Math.round(currentY * 100) / 100;
