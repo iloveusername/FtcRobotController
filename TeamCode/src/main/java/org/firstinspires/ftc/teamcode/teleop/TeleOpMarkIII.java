@@ -1,18 +1,23 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.robot.RobotState;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
-@TeleOp(name="TeleOp Mark I", group="Basic")
-public class TeleOpTest extends LinearOpMode {
+//Sets Up The State Machine
+enum Robostate {
+    DRIVE, TURN, IDLE
+}
+
+@TeleOp(name="TeleOp Mark III", group="Basic")
+public class TeleOpMarkIII extends LinearOpMode {
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
     private DcMotor BleftDrive = null;
@@ -38,8 +43,7 @@ public class TeleOpTest extends LinearOpMode {
     double checkX = 0;
     double checkY = 0;
 
-    //Sets Up The State Machine
-    String roboState = "drive";
+    Robostate roboState = Robostate.IDLE;
 
 
     @Override
@@ -78,148 +82,111 @@ public class TeleOpTest extends LinearOpMode {
 
         while (opModeIsActive()) {
 
-            resetDrive();
-
-            //Gyro Stuff
-            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-            currentAngle = -angles.firstAngle;
-
-            //This just saved me sometime by having to type less.
             double stickX = gamepad1.left_stick_x;
             double stickY = -gamepad1.left_stick_y;
 
-            //Pressing A will both break and save our position.
-            if(gamepad1.a){
-                if(doneTurn){
-                    sleep(50);
-                    resetCount();
-                    doneTurn = false;
-                }
-
-                //Since we only move in straight lines, we can take the total encoder count during that period, then multiple it by the sin or cosine of whatever angle we were facing to find X and Y values relative to origin.
-                angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                currentAngle = -angles.firstAngle;
-                currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
-                currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
-                currentY = (double) Math.round(currentY * 100) / 100;
-                currentX = (double) Math.round(currentX * 100) / 100;
-
-                //This just breaks.
-                stickX = 0;
-                stickY = 0;
-                resetCount();
-
-            }
-
-            //Pressing B will reset our angle to what it started at.
-            if(gamepad1.b){
-                rotateToAngle(0);
-            }
-
-            //Rotate 90 Degrees left of right depending on input.
-            if(gamepad1.x && gamepad1.dpad_left){
-                rotateToAngle(currentAngle - 90);
-
-            }
-            if(gamepad1.x && gamepad1.dpad_right){
-                rotateToAngle(currentAngle + 90);
-
-            }
-
-            //If we press the back button, we will return to origin.
-            if(gamepad1.back && canDo){
-                angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                currentAngle = -angles.firstAngle;
-                resetCount();
-                goToOrigin(0.75);
-            }
-
-            //Drops a checkpoint.
-            if(gamepad1.left_bumper && canDo){
-                checkX = currentX;
-                checkY = currentY;
-            }
-
-            //Resets your origin to where you currently are.
-            if(gamepad1.left_stick_button && gamepad1.right_stick_button && canDo){
-                currentX = 0;
-                currentY = 0;
-            }
-
-            //Holding X cuts speed in half for percision and whatnot.
-            if(gamepad1.x){
-                stickX *= 0.5;
-                stickY *= 0.5;
-            }
-
-            //Pressing the right bumper will bring us to our dropped checkpoint.
-            if(gamepad1.right_bumper && canDo){
-                resetCount();
-                goToCoordinates(checkX, checkY,0.75);
-            }
-
-            //This is just a predetermined autonomous path we can take if we press Start. We can adjust to whatever we want.
-            if(gamepad1.start && canDo){
-                resetCount();
-                goToCoordinates(0.5, 0.5,0.75);
-                goToCoordinates(-0.5, 0.5,0.75);
-                goToCoordinates(0, 0,0.75);
-                rotateToAngle(0);
-            }
-
-            //Determines if we should be in a turning state, stand still, or driving state depending on our joystick's position.
-            if(Math.abs(stickX) > 0.25){
-                roboState = "turn";
-            }
-            else if(stickX == 0 && stickY == 0){
-                if(doneTurn){
-                    sleep(50);
-                    resetCount();
-                }
-                doneTurn = false;
-                angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                currentAngle = -angles.firstAngle;
-                currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
-                currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
-                currentY = (double) Math.round(currentY * 100) / 100;
-                currentX = (double) Math.round(currentX * 100) / 100;
-
-                resetCount();
-                canDo = true;
-            }
-            else{
-                roboState = "drive";
-                canDo = false;
-            }
-
-
-            //Depending on the state of the robot, do different things. This one is straightforward enough.
             switch (roboState){
-                case "drive":
-                    if(doneTurn){
-                        resetCount();
-                        doneTurn = false;
+                case IDLE:
+                    //These are the exit conditions for the IDLE state.
+                    if(Math.abs(stickX) > 0.25){
+                        roboState = Robostate.TURN;
                     }
+                    else if(stickY != 0){
+                        roboState = Robostate.DRIVE;
+                    }
+
+                    //Refresh the gyroscope every loop.
+                    angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                    currentAngle = -angles.firstAngle;
+
+                    //Robot takes a non zero amount of time to fully stop, so we have a 50 millisecond sleep so it doesn't mess with anything.
+                    if(doneTurn){
+                        sleep(50);
+                        resetCount();
+                    }
+                    doneTurn = false;
+
+                    //This code takes the encoder value of the motors after moving then stopping,
+                    //Then multiplies that number by the sine and cosine of the robot's current angle to find
+                    //The respective change in X and Y values.
+                    if(trackEncoders){
+                        currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
+                        currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
+                        currentY = (double) Math.round(currentY * 100) / 100;
+                        currentX = (double) Math.round(currentX * 100) / 100;
+                        resetCount();
+                        trackEncoders = false;
+                    }
+
+                    //Press the Back button to return to origin at a speed of 0.75
+                    if(gamepad1.back){
+                        resetCount();
+                        goToOrigin(0.75);
+                    }
+
+                    //Drop a checkpoint by pressing Left Bumper.
+                    if(gamepad1.left_bumper){
+                        checkX = currentX;
+                        checkY = currentY;
+                    }
+
+                    //Go to the dropped checkpoint.
+                    if(gamepad1.right_bumper){
+                        resetCount();
+                        goToCoordinates(checkX, checkY,0.75);
+                    }
+
+                    //Rotate to your starting angle by pressing B.
+                    if(gamepad1.b){
+                        rotateToAngle(0);
+                    }
+
+
+                    leftDrive.setPower(0);
+                    rightDrive.setPower(0);
+                    BleftDrive.setPower(0);
+                    BrightDrive.setPower(0);
+                    break;
+
+
+
+                case DRIVE:
+                    //Tracking logic.
+                    trackEncoders = true;
+
+                    //Refresh the gyroscope.
+                    angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                    currentAngle = -angles.firstAngle;
+
+                    //Exit conditions for the DRIVE state.
+                    if((stickX == 0 && stickY == 0) || Math.abs(stickX) > 0.25){
+                        roboState = Robostate.IDLE;
+                    }
+
+                    //Run using encoders for more accuracy while driving.
                     leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                     rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                     BleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                     BrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    trackEncoders = true;
+
+                    //Sets the wheels to the correct direction for moving forwards and backwards.
                     wheelDirection("up");
+
+                    //Set the power to joystick's Y value.
                     leftDrive.setPower(stickY);
                     rightDrive.setPower(stickY);
                     BleftDrive.setPower(stickY);
                     BrightDrive.setPower(stickY);
                     break;
-                case "turn":
-                    if(trackEncoders){
-                        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                        currentAngle = -angles.firstAngle;
-                        currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
-                        currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
-                        currentY = (double) Math.round(currentY * 100) / 100;
-                        currentX = (double) Math.round(currentX * 100) / 100;
-                        trackEncoders = false;
+
+
+
+                case TURN:
+                    doneTurn = true;
+                    angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                    currentAngle = -angles.firstAngle;
+                    if((stickX == 0 && stickY == 0) || Math.abs(stickY) > 0.25){
+                        roboState = Robostate.IDLE;
                     }
                     leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -230,26 +197,25 @@ public class TeleOpTest extends LinearOpMode {
                     rightDrive.setPower(stickX);
                     BleftDrive.setPower(stickX);
                     BrightDrive.setPower(stickX);
-                    doneTurn = true;
                     break;
-                case "dpad":
+
+
+
+                default:
+                    roboState = Robostate.IDLE;
                     break;
             }
 
 
-            //All of your telemetry desires can be fulfilled here.
-            //telemetry.addData("Stick X", stickX);
-            //telemetry.addData("Stick Y", stickY);
-            telemetry.addData("Can Do?", canDo);
+
+//            telemetry.addData("Track Encoders?", trackEncoders);
+//            telemetry.addData("Was Turning?", doneTurn);
             telemetry.addData("Current Rot", currentAngle);
-            telemetry.addData("Count Encoders?", trackEncoders);
             telemetry.addData("Current X", currentX);
             telemetry.addData("Current Y", currentY);
             telemetry.addData("Checkpoint X", checkX);
             telemetry.addData("Checkpoint Y", checkY);
-//            telemetry.addData("Angle Sine", Math.sin(currentAngle * Math.PI/180));
-//            telemetry.addData("Angle Cosine", Math.cos(currentAngle * Math.PI/180));
-//            telemetry.addData("State", roboState);
+            telemetry.addData("State", roboState);
             telemetry.update();
 
         }
