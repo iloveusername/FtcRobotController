@@ -81,10 +81,12 @@ public class TeleOpMarkIII extends LinearOpMode {
 
         while (opModeIsActive()) {
 
+            //Shortens the gamepad joystick to simple variables, and initializes the powerMult variable.
             double powerMult = 1;
             double stickX = gamepad1.left_stick_x;
             double stickY = -gamepad1.left_stick_y;
 
+            //The Finite State Machine.
             switch (roboState){
 
                 case IDLE:
@@ -108,9 +110,9 @@ public class TeleOpMarkIII extends LinearOpMode {
                     }
                     doneTurn = false;
 
-                    //This code takes the encoder value of the motors after moving then stopping,
-                    //Then multiplies that number by the sine and cosine of the robot's current angle to find
-                    //The respective change in X and Y values.
+                    /** This code takes the encoder value of the motors after moving then stopping,
+                    Then multiplies that number by the sine and cosine of the robot's current angle to find
+                    The respective change in X and Y values. */
                     if(trackEncoders){
                         currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                         currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
@@ -143,7 +145,7 @@ public class TeleOpMarkIII extends LinearOpMode {
                         rotateToAngle(0);
                     }
 
-
+                    //This is probably redundant, but it hits the breaks on the robot.
                     leftDrive.setPower(0);
                     rightDrive.setPower(0);
                     BleftDrive.setPower(0);
