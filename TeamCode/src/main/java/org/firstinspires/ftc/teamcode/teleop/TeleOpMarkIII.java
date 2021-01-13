@@ -37,7 +37,6 @@ public class TeleOpMarkIII extends LinearOpMode {
     double currentY = 0;
     boolean trackEncoders = false;
     boolean doneTurn = false;
-    boolean canDo = false;
 
     //Sets up a checkpoint system.
     double checkX = 0;
@@ -82,11 +81,14 @@ public class TeleOpMarkIII extends LinearOpMode {
 
         while (opModeIsActive()) {
 
+            double powerMult = 1;
             double stickX = gamepad1.left_stick_x;
             double stickY = -gamepad1.left_stick_y;
 
             switch (roboState){
+
                 case IDLE:
+
                     //These are the exit conditions for the IDLE state.
                     if(Math.abs(stickX) > 0.25){
                         roboState = Robostate.TURN;
@@ -148,9 +150,8 @@ public class TeleOpMarkIII extends LinearOpMode {
                     BrightDrive.setPower(0);
                     break;
 
-
-
                 case DRIVE:
+
                     //Tracking logic.
                     trackEncoders = true;
 
@@ -172,34 +173,58 @@ public class TeleOpMarkIII extends LinearOpMode {
                     //Sets the wheels to the correct direction for moving forwards and backwards.
                     wheelDirection("up");
 
-                    //Set the power to joystick's Y value.
-                    leftDrive.setPower(stickY);
-                    rightDrive.setPower(stickY);
-                    BleftDrive.setPower(stickY);
-                    BrightDrive.setPower(stickY);
+                    //Hold X while moving to reduce speed by half.
+                    if(gamepad1.x){
+                        powerMult = 0.5;
+                    }
+                    else{
+                        powerMult = 1;
+                    }
+
+                    //Set the power to the joystick's Y value.
+                    leftDrive.setPower(stickY * powerMult);
+                    rightDrive.setPower(stickY * powerMult);
+                    BleftDrive.setPower(stickY * powerMult);
+                    BrightDrive.setPower(stickY * powerMult);
+
                     break;
 
-
-
                 case TURN:
+                    //Logic for tracking encoders.
                     doneTurn = true;
+
+                    //Refresh the encoder value.
                     angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
                     currentAngle = -angles.firstAngle;
+
+                    //Exit conditions for the TURN state.
                     if((stickX == 0 && stickY == 0) || Math.abs(stickY) > 0.25){
                         roboState = Robostate.IDLE;
                     }
+
                     leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     BleftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     BrightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+                    //Sets the wheels to the correct direction for turning left and right.
                     wheelDirection("turnRight");
-                    leftDrive.setPower(stickX);
-                    rightDrive.setPower(stickX);
-                    BleftDrive.setPower(stickX);
-                    BrightDrive.setPower(stickX);
+
+                    //Hold X while moving to reduce speed by half.
+                    if(gamepad1.x){
+                        powerMult = 0.5;
+                    }
+                    else{
+                        powerMult = 1;
+                    }
+
+                    //Sets the power to the joystick's X value.
+                    leftDrive.setPower(stickX * powerMult);
+                    rightDrive.setPower(stickX * powerMult);
+                    BleftDrive.setPower(stickX * powerMult);
+                    BrightDrive.setPower(stickX * powerMult);
+
                     break;
-
-
 
                 default:
                     roboState = Robostate.IDLE;
