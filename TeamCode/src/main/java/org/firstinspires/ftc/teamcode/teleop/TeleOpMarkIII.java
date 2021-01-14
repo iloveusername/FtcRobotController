@@ -38,10 +38,11 @@ public class TeleOpMarkIII extends LinearOpMode {
     boolean trackEncoders = false;
     boolean doneTurn = false;
 
-    //Sets up a checkpoint system.
+    //Prevents crashing when you haven't yet set a checkpoint.
     double checkX = 0;
     double checkY = 0;
 
+    //Robot starts off in the IDLE state.
     Robostate roboState = Robostate.IDLE;
 
 
@@ -57,6 +58,7 @@ public class TeleOpMarkIII extends LinearOpMode {
 
         waitForStart();
 
+        //Lines 62-82 of code set up the motors for use.
         leftDrive = hardwareMap.get(DcMotor.class, "FL");
         rightDrive = hardwareMap.get(DcMotor.class, "FR");
         BleftDrive = hardwareMap.get(DcMotor.class, "BL");
@@ -329,6 +331,10 @@ public class TeleOpMarkIII extends LinearOpMode {
 
         while(!isDone && opModeIsActive()){
 
+            //Refresh the gyroscope.
+            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            currentAngle = -angles.firstAngle;
+
             //Turns the robot using encoders for accuracy. Adjust speed if you want.
             int encoderTurn = (int) Math.round(((AngleOfTri - currentAngle)*rotToEncoder));
             encoderTurn = Math.abs(encoderTurn);
@@ -442,6 +448,10 @@ public class TeleOpMarkIII extends LinearOpMode {
             wheelDirection("turnLeft");
         }
 
+        //Refresh the gyroscope.
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        currentAngle = -angles.firstAngle;
+
         //Turns the robot using encoders for accuracy. Adjust speed if you want.
         int encoderTurn = (int) Math.round(((AngleOfTri - currentAngle)*rotToEncoder));
         encoderTurn = Math.abs(encoderTurn);
@@ -551,6 +561,10 @@ public class TeleOpMarkIII extends LinearOpMode {
         }
 
         while(!isDone && opModeIsActive()){
+            //Refresh the gyroscope.
+            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            currentAngle = -angles.firstAngle;
+
             //Turns the robot using encoders for accuracy. Adjust speed if you want.
             int encoderTurn = (int) Math.round(((AngleOfTri - currentAngle)*rotToEncoder));
             encoderTurn = Math.abs(encoderTurn);
