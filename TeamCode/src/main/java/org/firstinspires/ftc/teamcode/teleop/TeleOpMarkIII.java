@@ -4,6 +4,7 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.robot.RobotState;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -12,7 +13,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 //Sets Up The State Machine
-enum Robostate {
+ enum Robostate {
     DRIVE, TURN, IDLE
 }
 
@@ -37,6 +38,9 @@ public class TeleOpMarkIII extends LinearOpMode {
     double currentY = 0;
     boolean trackEncoders = false;
     boolean doneTurn = false;
+    double averagePos;
+    String currentDirection = "Up";
+    String dirCheck = currentDirection;
 
     //Prevents crashing when you haven't yet set a checkpoint.
     double checkX = 0;
@@ -88,6 +92,12 @@ public class TeleOpMarkIII extends LinearOpMode {
             double stickX = gamepad1.left_stick_x;
             double stickY = -gamepad1.left_stick_y;
 
+            //DPAD Directional Stuff
+            if(gamepad1.dpad_up) currentDirection = "Up";
+            if(gamepad1.dpad_down) currentDirection = "Down";
+            if(gamepad1.dpad_left) currentDirection = "Left";
+            if(gamepad1.dpad_right) currentDirection = "Right";
+
             //The Finite State Machine.
             switch (roboState){
 
@@ -114,13 +124,38 @@ public class TeleOpMarkIII extends LinearOpMode {
 
                     /** This code takes the encoder value of the motors after moving then stopping,
                     Then multiplies that number by the sine and cosine of the robot's current angle to find
-                    The respective change in X and Y values. */
+                    The respective change in X and Y values.
+                    It also takes in to account if the robot was going sideways or not, and changes the values accordingly.*/
                     if(trackEncoders){
-                        currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
-                        currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
-                        currentY = (double) Math.round(currentY * 100) / 100;
-                        currentX = (double) Math.round(currentX * 100) / 100;
-                        resetCount();
+                        averagePos =  0.25*(leftDrive.getCurrentPosition()+rightDrive.getCurrentPosition()+BleftDrive.getCurrentPosition()+BrightDrive.getCurrentPosition());
+                        if(dirCheck == "Up"){
+                            currentY += (Math.cos(currentAngle * Math.PI/180) * (averagePos) / meterToEncoder);
+                            currentX += (Math.sin(currentAngle * Math.PI/180) * (averagePos)) / meterToEncoder;
+                            currentY = (double) Math.round(currentY * 100) / 100;
+                            currentX = (double) Math.round(currentX * 100) / 100;
+                            resetCount();
+                        }
+                        if(dirCheck == "Down"){
+                            currentY -= (Math.cos(currentAngle * Math.PI/180) * (averagePos)) / meterToEncoder;
+                            currentX -= (Math.sin(currentAngle * Math.PI/180) * (averagePos)) / meterToEncoder;
+                            currentY = (double) Math.round(currentY * 100) / 100;
+                            currentX = (double) Math.round(currentX * 100) / 100;
+                            resetCount();
+                        }
+                        if(dirCheck == "Right"){
+                            currentY += (Math.sin(currentAngle * Math.PI/180) * (averagePos)) / meterToEncoder;
+                            currentX += (Math.cos(currentAngle * Math.PI/180) * (averagePos)) / meterToEncoder;
+                            currentY = (double) Math.round(currentY * 100) / 100;
+                            currentX = (double) Math.round(currentX * 100) / 100;
+                            resetCount();
+                        }
+                        if(dirCheck == "Left"){
+                            currentY -= (Math.sin(currentAngle * Math.PI/180) * (averagePos)) / meterToEncoder;
+                            currentX -= (Math.cos(currentAngle * Math.PI/180) * (averagePos)) / meterToEncoder;
+                            currentY = (double) Math.round(currentY * 100) / 100;
+                            currentX = (double) Math.round(currentX * 100) / 100;
+                            resetCount();
+                        }
                         trackEncoders = false;
                     }
 
@@ -159,6 +194,13 @@ public class TeleOpMarkIII extends LinearOpMode {
                     //Tracking logic.
                     trackEncoders = true;
 
+                    //More Tracking Logic And Some Exit logic
+                    if(dirCheck != currentDirection){
+                        roboState = Robostate.IDLE;
+                    }
+
+                    dirCheck = currentDirection;
+
                     //Refresh the gyroscope.
                     angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
                     currentAngle = -angles.firstAngle;
@@ -174,8 +216,21 @@ public class TeleOpMarkIII extends LinearOpMode {
                     BleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                     BrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-                    //Sets the wheels to the correct direction for moving forwards and backwards.
-                    wheelDirection("up");
+                    //Switch Statement For Direction
+                    switch (currentDirection){
+                        case "Up":
+                            wheelDirection("up");
+                            break;
+                        case "Down":
+                            wheelDirection("down");
+                            break;
+                        case "Right":
+                            wheelDirection("right");
+                            break;
+                        case "Left":
+                            wheelDirection("left");
+                            break;
+                    }
 
                     //Hold X while moving to reduce speed by half.
                     if(gamepad1.x){
@@ -235,15 +290,15 @@ public class TeleOpMarkIII extends LinearOpMode {
                     break;
             }
 
-
-
 //            telemetry.addData("Track Encoders?", trackEncoders);
 //            telemetry.addData("Was Turning?", doneTurn);
+            telemetry.addData("Check Direction", dirCheck);
+            telemetry.addData("Current Direction", currentDirection);
             telemetry.addData("Current Rot", currentAngle);
             telemetry.addData("Current X", currentX);
             telemetry.addData("Current Y", currentY);
-            telemetry.addData("Checkpoint X", checkX);
-            telemetry.addData("Checkpoint Y", checkY);
+//            telemetry.addData("Checkpoint X", checkX);
+//            telemetry.addData("Checkpoint Y", checkY);
             telemetry.addData("State", roboState);
             telemetry.update();
 
@@ -617,28 +672,32 @@ public class TeleOpMarkIII extends LinearOpMode {
     public void wheelDirection(String dir){
         switch (dir){
             case "up":
+                currentDirection = "Up";
                 leftDrive.setDirection(DcMotor.Direction.FORWARD);
                 rightDrive.setDirection(DcMotor.Direction.REVERSE);
                 BleftDrive.setDirection(DcMotor.Direction.FORWARD);
                 BrightDrive.setDirection(DcMotor.Direction.REVERSE);
                 break;
             case "down":
+                currentDirection = "Down";
                 leftDrive.setDirection(DcMotor.Direction.REVERSE);
                 rightDrive.setDirection(DcMotor.Direction.FORWARD);
                 BleftDrive.setDirection(DcMotor.Direction.REVERSE);
                 BrightDrive.setDirection(DcMotor.Direction.FORWARD);
                 break;
             case "left":
+                currentDirection = "Left";
                 leftDrive.setDirection(DcMotor.Direction.REVERSE);
-                rightDrive.setDirection(DcMotor.Direction.FORWARD);
+                rightDrive.setDirection(DcMotor.Direction.REVERSE);
                 BleftDrive.setDirection(DcMotor.Direction.FORWARD);
-                BrightDrive.setDirection(DcMotor.Direction.REVERSE);
+                BrightDrive.setDirection(DcMotor.Direction.FORWARD);
                 break;
             case "right":
+                currentDirection = "Right";
                 leftDrive.setDirection(DcMotor.Direction.FORWARD);
-                rightDrive.setDirection(DcMotor.Direction.REVERSE);
+                rightDrive.setDirection(DcMotor.Direction.FORWARD);
                 BleftDrive.setDirection(DcMotor.Direction.REVERSE);
-                BrightDrive.setDirection(DcMotor.Direction.FORWARD);
+                BrightDrive.setDirection(DcMotor.Direction.REVERSE);
                 break;
             case "turnLeft":
                 leftDrive.setDirection(DcMotor.Direction.REVERSE);
