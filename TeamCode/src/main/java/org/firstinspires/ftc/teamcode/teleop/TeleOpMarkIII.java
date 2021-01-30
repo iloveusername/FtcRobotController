@@ -160,15 +160,15 @@ public class TeleOpMarkIII extends LinearOpMode {
                             resetCount();
                         }
                         if(dirCheck == "UpLeft"){
-                            currentY += 0.71*(Math.cos((currentAngle+45) * Math.PI/180) * (rightDrive.getCurrentPosition()) / meterToEncoder);
-                            currentX -= 0.71*(Math.sin((currentAngle+45) * Math.PI/180) * (rightDrive.getCurrentPosition()) / meterToEncoder);
+                            currentY += 0.71*(Math.sin((currentAngle+45) * Math.PI/180) * (rightDrive.getCurrentPosition()) / meterToEncoder);
+                            currentX -= 0.71*(Math.cos((currentAngle+45) * Math.PI/180) * (rightDrive.getCurrentPosition()) / meterToEncoder);
                             currentY = (double) Math.round(currentY * 100) / 100;
                             currentX = (double) Math.round(currentX * 100) / 100;
                             resetCount();
                         }
                         if(dirCheck == "DownRight"){
-                            currentY += 0.71*(Math.cos((currentAngle+45) * Math.PI/180) * (rightDrive.getCurrentPosition()) / meterToEncoder);
-                            currentX -= 0.71*(Math.sin((currentAngle+45) * Math.PI/180) * (rightDrive.getCurrentPosition()) / meterToEncoder);
+                            currentY += 0.71*(Math.sin((currentAngle+45) * Math.PI/180) * (rightDrive.getCurrentPosition()) / meterToEncoder);
+                            currentX -= 0.71*(Math.cos((currentAngle+45) * Math.PI/180) * (rightDrive.getCurrentPosition()) / meterToEncoder);
                             currentY = (double) Math.round(currentY * 100) / 100;
                             currentX = (double) Math.round(currentX * 100) / 100;
                             resetCount();
@@ -210,11 +210,15 @@ public class TeleOpMarkIII extends LinearOpMode {
                     //Rotate to your starting angle by pressing B.
                     if(gamepad1.b){
                         rotateToAngle(0);
+                        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                        currentAngle = -angles.firstAngle;
                         rotateToAngle(0);
                     }
                     //Rotate to your starting angle by pressing B.
                     if(gamepad1.left_stick_button){
                         rotateToAngle(45);
+                        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                        currentAngle = -angles.firstAngle;
                         rotateToAngle(45);
                     }
 
