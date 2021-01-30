@@ -14,7 +14,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 //Sets Up The State Machine
  enum Robostate {
-    DRIVE, TURN, IDLE, UP, DOWN, LEFT, RIGHT
+    DRIVE, TURN, IDLE, UP, DOWN, LEFT, RIGHT, UPRIGHT, UPLEFT, DOWNRIGHT, DOWNLEFT
 }
 
 @TeleOp(name="TeleOp Mark III", group="Basic")
@@ -112,6 +112,18 @@ public class TeleOpMarkIII extends LinearOpMode {
                     else if(stickY != 0 && !trackEncoders){
                         roboState = Robostate.DRIVE;
                     }
+                    else if (gamepad1.dpad_up && gamepad1.dpad_right){
+                        roboState = Robostate.UPRIGHT;
+                    }
+                    else if (gamepad1.dpad_up && gamepad1.dpad_left){
+                        roboState = Robostate.UPLEFT;
+                    }
+                    else if (gamepad1.dpad_down && gamepad1.dpad_right){
+                        roboState = Robostate.DOWNRIGHT;
+                    }
+                    else if (gamepad1.dpad_down && gamepad1.dpad_left){
+                        roboState = Robostate.DOWNLEFT;
+                    }
                     else if (gamepad1.dpad_up){
                         roboState = Robostate.UP;
                     }
@@ -162,6 +174,34 @@ public class TeleOpMarkIII extends LinearOpMode {
                         if(dirCheck == "Left"){
                             currentY -= (Math.sin(currentAngle * Math.PI/180) * (averagePos)) / meterToEncoder;
                             currentX -= (Math.cos(currentAngle * Math.PI/180) * (averagePos)) / meterToEncoder;
+                            currentY = (double) Math.round(currentY * 100) / 100;
+                            currentX = (double) Math.round(currentX * 100) / 100;
+                            resetCount();
+                        }
+                        if(dirCheck == "UpRight"){
+                            currentY += 0.71*(Math.cos((currentAngle+45) * Math.PI/180) * (leftDrive.getCurrentPosition()) / meterToEncoder);
+                            currentX += 0.71*(Math.sin((currentAngle+45) * Math.PI/180) * (leftDrive.getCurrentPosition()) / meterToEncoder);
+                            currentY = (double) Math.round(currentY * 100) / 100;
+                            currentX = (double) Math.round(currentX * 100) / 100;
+                            resetCount();
+                        }
+                        if(dirCheck == "UpLeft"){
+                            currentY += 0.71*(Math.cos((currentAngle+45) * Math.PI/180) * (rightDrive.getCurrentPosition()) / meterToEncoder);
+                            currentX -= 0.71*(Math.sin((currentAngle+45) * Math.PI/180) * (rightDrive.getCurrentPosition()) / meterToEncoder);
+                            currentY = (double) Math.round(currentY * 100) / 100;
+                            currentX = (double) Math.round(currentX * 100) / 100;
+                            resetCount();
+                        }
+                        if(dirCheck == "DownRight"){
+                            currentY -= 0.71*(Math.cos((currentAngle+45) * Math.PI/180) * (Math.abs(leftDrive.getCurrentPosition())) / meterToEncoder);
+                            currentX += 0.71*(Math.sin((currentAngle+45) * Math.PI/180) * (Math.abs(leftDrive.getCurrentPosition())) / meterToEncoder);
+                            currentY = (double) Math.round(currentY * 100) / 100;
+                            currentX = (double) Math.round(currentX * 100) / 100;
+                            resetCount();
+                        }
+                        if(dirCheck == "DownLeft"){
+                            currentY -= 0.71*(Math.cos((currentAngle+45) * Math.PI/180) * (Math.abs(rightDrive.getCurrentPosition())) / meterToEncoder);
+                            currentX -= 0.71*(Math.sin((currentAngle+45) * Math.PI/180) * (Math.abs(rightDrive.getCurrentPosition())) / meterToEncoder);
                             currentY = (double) Math.round(currentY * 100) / 100;
                             currentX = (double) Math.round(currentX * 100) / 100;
                             resetCount();
@@ -300,12 +340,12 @@ public class TeleOpMarkIII extends LinearOpMode {
                     //Go Upwards While In UP Mode.
                     wheelDirection("up");
 
-                    //Hold X while moving double your speed.
+                    //Hold X while moving to reduce speed by half.
                     if(gamepad1.x){
-                        powerMult = 1;
+                        powerMult = 0.5;
                     }
                     else{
-                        powerMult = 0.5;
+                        powerMult = 1;
                     }
 
                     //Sets the power to whatever we have powerMult set to.
@@ -340,12 +380,12 @@ public class TeleOpMarkIII extends LinearOpMode {
                     //Go Downwards While In DOWN Mode.
                     wheelDirection("down");
 
-                    //Hold X while moving double your speed.
+                    //Hold X while moving to reduce speed by half.
                     if(gamepad1.x){
-                        powerMult = 1;
+                        powerMult = 0.5;
                     }
                     else{
-                        powerMult = 0.5;
+                        powerMult = 1;
                     }
 
                     //Sets the power to whatever we have powerMult set to.
@@ -380,12 +420,12 @@ public class TeleOpMarkIII extends LinearOpMode {
                     //Go Leftwards While In LEFT Mode.
                     wheelDirection("left");
 
-                    //Hold X while moving double your speed.
+                    //Hold X while moving to reduce speed by half.
                     if(gamepad1.x){
-                        powerMult = 1;
+                        powerMult = 0.5;
                     }
                     else{
-                        powerMult = 0.5;
+                        powerMult = 1;
                     }
 
                     //Sets the power to whatever we have powerMult set to.
@@ -420,12 +460,12 @@ public class TeleOpMarkIII extends LinearOpMode {
                     //Go Rightwards While In RIGHT Mode.
                     wheelDirection("right");
 
-                    //Hold X while moving double your speed.
+                    //Hold X while moving to reduce speed by half.
                     if(gamepad1.x){
-                        powerMult = 1;
+                        powerMult = 0.5;
                     }
                     else{
-                        powerMult = 0.5;
+                        powerMult = 1;
                     }
 
                     //Sets the power to whatever we have powerMult set to.
@@ -433,6 +473,168 @@ public class TeleOpMarkIII extends LinearOpMode {
                     rightDrive.setPower(powerMult);
                     BleftDrive.setPower(powerMult);
                     BrightDrive.setPower(powerMult);
+
+                    break;
+
+                case UPRIGHT:
+
+                    //Exit Conditions For The UP Case.
+                    if(!gamepad1.dpad_up && !gamepad1.dpad_right){
+                        roboState = Robostate.IDLE;
+                    }
+
+                    //Tracking logic.
+                    trackEncoders = true;
+                    dirCheck = "UpRight";
+
+                    //Refresh the gyroscope.
+                    angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                    currentAngle = -angles.firstAngle;
+
+                    //Run using encoders for more accuracy while driving.
+                    leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    BleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    BrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+                    //Go Upwards While In UP Mode.
+                    wheelDirection("up");
+
+                    //Hold X while moving to reduce speed by half.
+                    if(gamepad1.x){
+                        powerMult = 0.5;
+                    }
+                    else{
+                        powerMult = 1;
+                    }
+
+                    //Sets the power to whatever we have powerMult set to.
+                    leftDrive.setPower(powerMult);
+                    rightDrive.setPower(0);
+                    BleftDrive.setPower(0);
+                    BrightDrive.setPower(powerMult);
+
+                    break;
+
+                case UPLEFT:
+
+                    //Exit Conditions For The UP Case.
+                    if(!gamepad1.dpad_up && !gamepad1.dpad_left){
+                        roboState = Robostate.IDLE;
+                    }
+
+                    //Tracking logic.
+                    trackEncoders = true;
+                    dirCheck = "UpLeft";
+
+                    //Refresh the gyroscope.
+                    angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                    currentAngle = -angles.firstAngle;
+
+                    //Run using encoders for more accuracy while driving.
+                    leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    BleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    BrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+                    //Go Upwards While In UP Mode.
+                    wheelDirection("up");
+
+                    //Hold X while moving to reduce speed by half.
+                    if(gamepad1.x){
+                        powerMult = 0.5;
+                    }
+                    else{
+                        powerMult = 1;
+                    }
+
+                    //Sets the power to whatever we have powerMult set to.
+                    leftDrive.setPower(0);
+                    rightDrive.setPower(powerMult);
+                    BleftDrive.setPower(powerMult);
+                    BrightDrive.setPower(0);
+
+                    break;
+
+                case DOWNRIGHT:
+
+                    //Exit Conditions For The UP Case.
+                    if(!gamepad1.dpad_down && !gamepad1.dpad_right){
+                        roboState = Robostate.IDLE;
+                    }
+
+                    //Tracking logic.
+                    trackEncoders = true;
+                    dirCheck = "DownRight";
+
+                    //Refresh the gyroscope.
+                    angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                    currentAngle = -angles.firstAngle;
+
+                    //Run using encoders for more accuracy while driving.
+                    leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    BleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    BrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+                    //Go Upwards While In UP Mode.
+                    wheelDirection("up");
+
+                    //Hold X while moving to reduce speed by half.
+                    if(gamepad1.x){
+                        powerMult = 0.5;
+                    }
+                    else{
+                        powerMult = 1;
+                    }
+
+
+                    //Sets the power to whatever we have powerMult set to.
+                    leftDrive.setPower(0);
+                    rightDrive.setPower(-powerMult);
+                    BleftDrive.setPower(-powerMult);
+                    BrightDrive.setPower(0);
+
+
+                    break;
+
+                case DOWNLEFT:
+
+                    //Exit Conditions For The UP Case.
+                    if(!gamepad1.dpad_down && !gamepad1.dpad_left){
+                        roboState = Robostate.IDLE;
+                    }
+
+                    //Tracking logic.
+                    trackEncoders = true;
+                    dirCheck = "DownLeft";
+
+                    //Refresh the gyroscope.
+                    angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                    currentAngle = -angles.firstAngle;
+
+                    //Run using encoders for more accuracy while driving.
+                    leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    BleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    BrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+                    //Go Upwards While In UP Mode.
+                    wheelDirection("up");
+
+                    //Hold X while moving to reduce speed by half.
+                    if(gamepad1.x){
+                        powerMult = 0.5;
+                    }
+                    else{
+                        powerMult = 1;
+                    }
+
+                    //Sets the power to whatever we have powerMult set to.
+                    leftDrive.setPower(-powerMult);
+                    rightDrive.setPower(0);
+                    BleftDrive.setPower(0);
+                    BrightDrive.setPower(-powerMult);
 
                     break;
 
@@ -448,6 +650,8 @@ public class TeleOpMarkIII extends LinearOpMode {
             telemetry.addData("Current Rot", currentAngle);
             telemetry.addData("Current X", currentX);
             telemetry.addData("Current Y", currentY);
+            telemetry.addData("LeftPos", leftDrive.getCurrentPosition());
+            telemetry.addData("RightPos", rightDrive.getCurrentPosition());
 //            telemetry.addData("Checkpoint X", checkX);
 //            telemetry.addData("Checkpoint Y", checkY);
             telemetry.addData("State", roboState);
