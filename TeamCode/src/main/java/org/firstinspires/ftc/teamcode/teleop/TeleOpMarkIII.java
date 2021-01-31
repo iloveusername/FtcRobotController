@@ -124,61 +124,49 @@ public class TeleOpMarkIII extends LinearOpMode {
                     It also takes in to account if the robot was going sideways or not, and changes the values accordingly.*/
                     if(trackEncoders){
                         averagePos =  0.25*(leftDrive.getCurrentPosition()+rightDrive.getCurrentPosition()+BleftDrive.getCurrentPosition()+BrightDrive.getCurrentPosition());
-                        if(dirCheck == "Up"){
-                            currentY += (Math.cos(currentAngle * Math.PI/180) * (averagePos) / meterToEncoder);
-                            currentX += (Math.sin(currentAngle * Math.PI/180) * (averagePos)) / meterToEncoder;
-                            currentY = (double) Math.round(currentY * 100) / 100;
-                            currentX = (double) Math.round(currentX * 100) / 100;
-                            resetCount();
-                        }
-                        if(dirCheck == "Down"){
-                            currentY -= (Math.cos(currentAngle * Math.PI/180) * (averagePos)) / meterToEncoder;
-                            currentX -= (Math.sin(currentAngle * Math.PI/180) * (averagePos)) / meterToEncoder;
-                            currentY = (double) Math.round(currentY * 100) / 100;
-                            currentX = (double) Math.round(currentX * 100) / 100;
-                            resetCount();
-                        }
-                        if(dirCheck == "Right"){
-                            currentY -= (Math.sin(currentAngle * Math.PI/180) * (averagePos)) / meterToEncoder;
-                            currentX += (Math.cos(currentAngle * Math.PI/180) * (averagePos)) / meterToEncoder;
-                            currentY = (double) Math.round(currentY * 100) / 100;
-                            currentX = (double) Math.round(currentX * 100) / 100;
-                            resetCount();
-                        }
-                        if(dirCheck == "Left"){
-                            currentY += (Math.sin(currentAngle * Math.PI/180) * (averagePos)) / meterToEncoder;
-                            currentX -= (Math.cos(currentAngle * Math.PI/180) * (averagePos)) / meterToEncoder;
-                            currentY = (double) Math.round(currentY * 100) / 100;
-                            currentX = (double) Math.round(currentX * 100) / 100;
-                            resetCount();
-                        }
-                        if(dirCheck == "UpRight"){
-                            currentY += 0.71*(Math.cos((currentAngle+45) * Math.PI/180) * (leftDrive.getCurrentPosition()) / meterToEncoder);
-                            currentX += 0.71*(Math.sin((currentAngle+45) * Math.PI/180) * (leftDrive.getCurrentPosition()) / meterToEncoder);
-                            currentY = (double) Math.round(currentY * 100) / 100;
-                            currentX = (double) Math.round(currentX * 100) / 100;
-                            resetCount();
-                        }
-                        if(dirCheck == "UpLeft"){
-                            currentY += 0.71*(Math.sin((currentAngle+45) * Math.PI/180) * (rightDrive.getCurrentPosition()) / meterToEncoder);
-                            currentX -= 0.71*(Math.cos((currentAngle+45) * Math.PI/180) * (rightDrive.getCurrentPosition()) / meterToEncoder);
-                            currentY = (double) Math.round(currentY * 100) / 100;
-                            currentX = (double) Math.round(currentX * 100) / 100;
-                            resetCount();
-                        }
-                        if(dirCheck == "DownRight"){
-                            currentY += 0.71*(Math.sin((currentAngle+45) * Math.PI/180) * (rightDrive.getCurrentPosition()) / meterToEncoder);
-                            currentX -= 0.71*(Math.cos((currentAngle+45) * Math.PI/180) * (rightDrive.getCurrentPosition()) / meterToEncoder);
-                            currentY = (double) Math.round(currentY * 100) / 100;
-                            currentX = (double) Math.round(currentX * 100) / 100;
-                            resetCount();
-                        }
-                        if(dirCheck == "DownLeft"){
-                            currentY += 0.71*(Math.cos((currentAngle+45) * Math.PI/180) * (leftDrive.getCurrentPosition()) / meterToEncoder);
-                            currentX += 0.71*(Math.sin((currentAngle+45) * Math.PI/180) * (leftDrive.getCurrentPosition()) / meterToEncoder);
-                            currentY = (double) Math.round(currentY * 100) / 100;
-                            currentX = (double) Math.round(currentX * 100) / 100;
-                            resetCount();
+                        switch (dirCheck){
+                            case "Up":
+                                currentY += (Math.cos(currentAngle * Math.PI/180) * (averagePos) / meterToEncoder);
+                                currentX += (Math.sin(currentAngle * Math.PI/180) * (averagePos)) / meterToEncoder;
+                                currentY = (double) Math.round(currentY * 100) / 100;
+                                currentX = (double) Math.round(currentX * 100) / 100;
+                                resetCount();
+                                break;
+                            case "Down":
+                                currentY -= (Math.cos(currentAngle * Math.PI/180) * (averagePos)) / meterToEncoder;
+                                currentX -= (Math.sin(currentAngle * Math.PI/180) * (averagePos)) / meterToEncoder;
+                                currentY = (double) Math.round(currentY * 100) / 100;
+                                currentX = (double) Math.round(currentX * 100) / 100;
+                                resetCount();
+                                break;
+                            case "Right":
+                                currentY -= (Math.sin(currentAngle * Math.PI/180) * (averagePos)) / meterToEncoder;
+                                currentX += (Math.cos(currentAngle * Math.PI/180) * (averagePos)) / meterToEncoder;
+                                currentY = (double) Math.round(currentY * 100) / 100;
+                                currentX = (double) Math.round(currentX * 100) / 100;
+                                resetCount();
+                                break;
+                            case "Left":
+                                currentY += (Math.sin(currentAngle * Math.PI/180) * (averagePos)) / meterToEncoder;
+                                currentX -= (Math.cos(currentAngle * Math.PI/180) * (averagePos)) / meterToEncoder;
+                                currentY = (double) Math.round(currentY * 100) / 100;
+                                currentX = (double) Math.round(currentX * 100) / 100;
+                                resetCount();
+                                break;
+                            case "UpRight":
+                                currentY += 0.71*(Math.cos((currentAngle+45) * Math.PI/180) * (leftDrive.getCurrentPosition()) / meterToEncoder);
+                                currentX += 0.71*(Math.sin((currentAngle+45) * Math.PI/180) * (leftDrive.getCurrentPosition()) / meterToEncoder);
+                                currentY = (double) Math.round(currentY * 100) / 100;
+                                currentX = (double) Math.round(currentX * 100) / 100;
+                                resetCount();
+                                break;
+                            case "UpLeft":
+                                currentY += 0.71*(Math.sin((currentAngle+45) * Math.PI/180) * (rightDrive.getCurrentPosition()) / meterToEncoder);
+                                currentX -= 0.71*(Math.cos((currentAngle+45) * Math.PI/180) * (rightDrive.getCurrentPosition()) / meterToEncoder);
+                                currentY = (double) Math.round(currentY * 100) / 100;
+                                currentX = (double) Math.round(currentX * 100) / 100;
+                                resetCount();
+                                break;
                         }
                         trackEncoders = false;
                     }
@@ -204,7 +192,7 @@ public class TeleOpMarkIII extends LinearOpMode {
                     //Go to the dropped checkpoint.
                     if(gamepad1.right_stick_button){
                         resetCount();
-                        goToCoordinates(-1.14, 2.14,0.75);
+                        goToCoordinates(2.74, -1.41,0.75);
                     }
 
                     //Rotate to your starting angle by pressing B.
@@ -582,7 +570,7 @@ public class TeleOpMarkIII extends LinearOpMode {
 
                     //Tracking logic.
                     trackEncoders = true;
-                    dirCheck = "DownRight";
+                    dirCheck = "UpLeft";
 
                     //Refresh the gyroscope.
                     angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
@@ -624,7 +612,7 @@ public class TeleOpMarkIII extends LinearOpMode {
 
                     //Tracking logic.
                     trackEncoders = true;
-                    dirCheck = "DownLeft";
+                    dirCheck = "UpRight";
 
                     //Refresh the gyroscope.
                     angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
