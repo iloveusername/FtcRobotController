@@ -260,7 +260,7 @@ public class TeleOpMarkIII extends LinearOpMode {
                     currentAngle = -angles.firstAngle;
 
                     //Exit conditions for the DRIVE state.
-                    if((stickX == 0 && stickY == 0) || Math.abs(stickX) > 0.25){
+                    if((stickX == 0 && stickY == 0) || Math.abs(stickX) > 0.3){
                         roboState = Robostate.IDLE;
                     }
 
@@ -298,7 +298,7 @@ public class TeleOpMarkIII extends LinearOpMode {
                     currentAngle = -angles.firstAngle;
 
                     //Exit conditions for the TURN state.
-                    if((stickX == 0 && stickY == 0) || Math.abs(stickY) > 0.25){
+                    if((stickX == 0 && stickY == 0) || Math.abs(stickX) < 0.3){
                         roboState = Robostate.IDLE;
                     }
 
@@ -872,10 +872,8 @@ public class TeleOpMarkIII extends LinearOpMode {
         angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         currentAngle = -angles.firstAngle;
 
-        //Turns the robot using encoders for accuracy. Adjust speed if you want.
-        int encoderTurn = (int) Math.round(((AngleOfTri - currentAngle)*rotToEncoder));
-        encoderTurn = Math.abs(encoderTurn);
-        encoderDrive(encoderTurn, 0.75);
+        //Turns the robot using encoders for accuracy.
+        rotateToAngle(AngleOfTri);
 
         //Moves the robot forward for the distance of the hypotenuse.
         wheelDirection("up");
@@ -1013,7 +1011,7 @@ public class TeleOpMarkIII extends LinearOpMode {
         }
     }
 
-    public void rotateToAngle(double angle){
+    public void rotateToAngleOld(double angle){
         boolean isDone = false;
 
         while(!isDone) {
@@ -1032,6 +1030,38 @@ public class TeleOpMarkIII extends LinearOpMode {
 
             isDone = true;
         }
+    }
+
+    public void rotateToAngle(double angle){
+        double angle2 = ((180-Math.abs(currentAngle)) + (180 - Math.abs(angle)));
+        double angle3 =  angle - currentAngle;
+        telemetry.addData("Angle2", angle2);
+        telemetry.addData("Angle3", angle3);
+        telemetry.update();
+        if(angle2 < Math.abs(angle3)){
+            if (angle2 > currentAngle) {
+                wheelDirection("turnLeft");
+            }
+            if (angle2 < currentAngle) {
+                wheelDirection("turnRight");
+            }
+            int encoderTurn = (int) Math.round(((angle2) * rotToEncoder));
+            encoderTurn = Math.abs(encoderTurn);
+            encoderDrive(encoderTurn, 0.75);
+        }
+        else if(angle2 > Math.abs(angle3)){
+            if (angle > currentAngle) {
+                wheelDirection("turnRight");
+            }
+            if (angle < currentAngle) {
+                wheelDirection("turnLeft");
+            }
+            int encoderTurn = (int) Math.round(((angle3) * rotToEncoder));
+            encoderTurn = Math.abs(encoderTurn);
+            encoderDrive(encoderTurn, 0.75);
+        }
+
+
     }
 
     public void wheelDirection(String dir){
