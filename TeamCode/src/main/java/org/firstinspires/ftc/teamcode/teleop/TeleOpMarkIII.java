@@ -1125,6 +1125,121 @@ public class TeleOpMarkIII extends LinearOpMode {
         BrightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
+    public void goToTargetBetterTurning(double targetX, double targetY, double targetSpeed){
+        //Sets up a switch to toggle this function on and off with.
+        boolean isDone = false;
+
+        //With Absolute Values, We Can Find The Angles We Want Without Crying. No promises.
+        double adjustedX = Math.abs(targetX);
+        double adjustedY = Math.abs(targetY);
+        int Quadrant = 1;
+
+        //This Determines The Quadrant Of The Angle.
+        if(targetX > 0){
+            if(targetY > 0){
+                Quadrant = 1;
+            }
+            if(targetY < 0){
+                Quadrant = 4;
+            }
+        }
+        if(targetX < 0){
+            if(targetY > 0){
+                Quadrant = 2;
+            }
+            if(targetY < 0){
+                Quadrant = 3;
+            }
+        }
+
+        //Finds Hypotenuse and the Theta value of the triangle.
+        double HypotenuseOfTri = Math.sqrt((targetX * targetX) + (targetY * targetY));
+        double AngleOfTri = Math.atan(adjustedY/adjustedX) * 180/Math.PI;
+
+        //How much we need to turn depends on the quadrant we are currently in.
+        switch (Quadrant){
+            case 1:
+                AngleOfTri = 90 - AngleOfTri;
+                break;
+            case 2:
+                AngleOfTri = -90 + AngleOfTri;
+                break;
+            case 3:
+                AngleOfTri = -90 - AngleOfTri;
+                break;
+            case 4:
+                AngleOfTri = 90 + AngleOfTri;
+                break;
+        }
+
+        //This determines if we are going vertical or horizontal, and sets the angle to whatever it needs to be.
+        if(targetX == 0){
+            if(targetY != 0){
+                HypotenuseOfTri = Math.abs(targetY);
+                if(targetY > 0){
+                    AngleOfTri = 0;
+                }
+                if(targetY < 0){
+                    AngleOfTri = -180;
+                }
+            }
+        }
+        if(targetY == 0){
+            if(targetX != 0){
+                HypotenuseOfTri = Math.abs(targetX);
+                if(targetX > 0){
+                    AngleOfTri = 90;
+                }
+                if(targetX < 0){
+                    AngleOfTri = -90;
+                }
+            }
+        }
+
+        //Determine turning direction.
+        if(AngleOfTri > currentAngle){
+            wheelDirection("turnRight");
+        }
+        if(AngleOfTri < currentAngle){
+            wheelDirection("turnLeft");
+        }
+
+        while(!isDone && opModeIsActive()){
+
+            //Refresh the gyroscope.
+            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            currentAngle = -angles.firstAngle;
+
+            //Turns the robot using encoders for accuracy. Adjust speed if you want.
+            int encoderTurn = (int) Math.round(((AngleOfTri - currentAngle)*rotToEncoder));
+            encoderTurn = Math.abs(encoderTurn);
+            encoderDrive(encoderTurn, 0.5);
+
+            //Moves the robot forward for the distance of the hypotenuse.
+            wheelDirection("up");
+            encoderDrive((int) Math.round(HypotenuseOfTri * meterToEncoder), targetSpeed);
+
+            //Telemetry stuff for debugging.
+            telemetry.addData("Distance To Rotate", (AngleOfTri - currentAngle));
+            telemetry.addData("Angle Of Attack", AngleOfTri);
+            telemetry.addData("Hypotenuse", HypotenuseOfTri);
+            telemetry.addData("Quadrant", Quadrant);
+            telemetry.addData("Current X", currentX);
+            telemetry.addData("Current Y", currentY);
+            telemetry.addData("Current Rot", currentAngle);
+            telemetry.update();
+
+            //Updates current position and rotation.
+            currentX += targetX;
+            currentY += targetY;
+
+            isDone = true;
+
+        }
+
+
+    }
+
 
     public void resetDrive(){
         leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
