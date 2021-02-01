@@ -179,7 +179,7 @@ public class TeleOpMarkIII extends LinearOpMode {
 
                     //Test
                     if(gamepad1.start){
-                        goToTargetBetterTurning(1,0,0.5);
+                        goToTargetBetterTurning(checkX,checkY,1);
                     }
 
                     //Drop a checkpoint by pressing Left Bumper.
@@ -1158,6 +1158,8 @@ public class TeleOpMarkIII extends LinearOpMode {
     }
 
     public void encoderDriveDiagonal(int desiredEncoder, double desiredSpeed, boolean Right){
+        desiredEncoder = (int) (desiredEncoder*1.4);
+        desiredSpeed = desiredSpeed * 1.4;
         leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         BleftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -1168,23 +1170,21 @@ public class TeleOpMarkIII extends LinearOpMode {
         BleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         BrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        leftDrive.setTargetPosition(desiredEncoder);
-        rightDrive.setTargetPosition(desiredEncoder);
-        BleftDrive.setTargetPosition(desiredEncoder);
-        BrightDrive.setTargetPosition(desiredEncoder);
-
-        leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        BleftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        BrightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
         if(Right) {
+            leftDrive.setTargetPosition(desiredEncoder);
+            BrightDrive.setTargetPosition(desiredEncoder);
+            leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            BrightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             leftDrive.setPower(desiredSpeed);
             rightDrive.setPower(0);
             BleftDrive.setPower(0);
             BrightDrive.setPower(desiredSpeed);
         }
        if(!Right){
+            rightDrive.setTargetPosition(desiredEncoder);
+            BleftDrive.setTargetPosition(desiredEncoder);
+            rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            BleftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             leftDrive.setPower(0);
             rightDrive.setPower(desiredSpeed);
             BleftDrive.setPower(desiredSpeed);
@@ -1196,8 +1196,8 @@ public class TeleOpMarkIII extends LinearOpMode {
             if(gamepad1.y){
                 angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
                 currentAngle = Math.round(-angles.firstAngle);
-                currentY += (Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
-                currentX += (Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
+                currentY +=  0.71*(Math.cos(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
+                currentX +=  0.71*(Math.sin(currentAngle * Math.PI/180) * (leftDrive.getCurrentPosition())) / meterToEncoder;
                 currentY = (double) Math.round(currentY * 100) / 100;
                 currentX = (double) Math.round(currentX * 100) / 100;
                 resetCount();
@@ -1216,7 +1216,11 @@ public class TeleOpMarkIII extends LinearOpMode {
         BrightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
-    public void goToTargetBetterTurning(double targetX, double targetY, double targetSpeed){
+    public void goToTargetBetterTurning(double coordX, double coordY, double targetSpeed){
+        //Gaming
+        double targetX = coordX - currentX;
+        double targetY = coordY - currentY;
+
         //Sets up a switch to toggle this function on and off with.
         boolean isDone = false;
 
@@ -1304,32 +1308,106 @@ public class TeleOpMarkIII extends LinearOpMode {
 
             //Gamer Stuff For Gamers
             targetLine = 45 * (int) Math.round((AngleOfTri - currentAngle)/45);
+//            if(targetLine > 180){
+//                targetLine = 180;
+//            }
+//            else if(targetLine < -180){
+//                targetLine = -180;
+//            }
 
             //Gamer Switch Statement
+            telemetry.addData("Type",targetLine);
+            telemetry.update();
             switch (targetLine){
+                case -135:
+                    //Refresh the gyroscope.
+                    angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                    currentAngle = -angles.firstAngle;
+
+                    //Rotates to the target line.
+                    rotateToAngle(AngleOfTri-targetLine);
+
+                    //Moves the robot forward for the distance of the hypotenuse.
+                    wheelDirection("up");
+                    encoderDriveDiagonal((int) Math.round(HypotenuseOfTri * meterToEncoder), targetSpeed, false);
+                    break;
+
+                case -90:
+                    //Refresh the gyroscope.
+                    angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                    currentAngle = -angles.firstAngle;
+
+                    //Rotates to the target line.
+                    rotateToAngle(AngleOfTri-targetLine);
+
+                    //Moves the robot forward for the distance of the hypotenuse.
+                    wheelDirection("left");
+                    encoderDrive((int) Math.round(HypotenuseOfTri * meterToEncoder), targetSpeed);
+                    break;
+
+                case -45:
+                    //Refresh the gyroscope.
+                    angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                    currentAngle = -angles.firstAngle;
+
+                    //Rotates to the target line.
+                    rotateToAngle(AngleOfTri-targetLine);
+
+                    //Moves the robot forward for the distance of the hypotenuse.
+                    wheelDirection("up");
+                    encoderDriveDiagonal((int) Math.round(HypotenuseOfTri * meterToEncoder), targetSpeed, false);
+                    break;
+
                 case 0:
                     //Refresh the gyroscope.
                     angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
                     currentAngle = -angles.firstAngle;
 
                     //Rotates to the target line.
-                    rotateToAngle(0);
+                    rotateToAngle(AngleOfTri-targetLine);
 
                     //Moves the robot forward for the distance of the hypotenuse.
                     wheelDirection("up");
                     encoderDrive((int) Math.round(HypotenuseOfTri * meterToEncoder), targetSpeed);
                     break;
+
+                case 45:
+                    //Refresh the gyroscope.
+                    angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                    currentAngle = -angles.firstAngle;
+
+                    //Rotates to the target line.
+                    rotateToAngle(AngleOfTri-targetLine);
+
+                    //Moves the robot forward for the distance of the hypotenuse.
+                    wheelDirection("up");
+                    encoderDriveDiagonal((int) Math.round(HypotenuseOfTri * meterToEncoder), targetSpeed, true);
+                    break;
+
                 case 90:
                     //Refresh the gyroscope.
                     angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
                     currentAngle = -angles.firstAngle;
 
                     //Rotates to the target line.
-                    rotateToAngle(90);
+                    rotateToAngle(AngleOfTri-targetLine);
 
                     //Moves the robot forward for the distance of the hypotenuse.
                     wheelDirection("right");
                     encoderDrive((int) Math.round(HypotenuseOfTri * meterToEncoder), targetSpeed);
+                    break;
+
+                case 135:
+                    //Refresh the gyroscope.
+                    angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                    currentAngle = -angles.firstAngle;
+
+                    //Rotates to the target line.
+                    rotateToAngle(AngleOfTri-targetLine);
+
+                    //Moves the robot forward for the distance of the hypotenuse.
+                    wheelDirection("down");
+                    encoderDriveDiagonal((int) Math.round(HypotenuseOfTri * meterToEncoder), targetSpeed, false);
                     break;
 
                 case 180:
@@ -1338,11 +1416,24 @@ public class TeleOpMarkIII extends LinearOpMode {
                     currentAngle = -angles.firstAngle;
 
                     //Rotates to the target line.
-                    rotateToAngle(180);
+                    rotateToAngle(AngleOfTri-targetLine);
 
                     //Moves the robot forward for the distance of the hypotenuse.
                     wheelDirection("down");
                     encoderDrive((int) Math.round(HypotenuseOfTri * meterToEncoder), targetSpeed);
+                    break;
+
+                case 225:
+                    //Refresh the gyroscope.
+                    angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                    currentAngle = -angles.firstAngle;
+
+                    //Rotates to the target line.
+                    rotateToAngle(AngleOfTri-targetLine);
+
+                    //Moves the robot forward for the distance of the hypotenuse.
+                    wheelDirection("down");
+                    encoderDriveDiagonal((int) Math.round(HypotenuseOfTri * meterToEncoder), targetSpeed, true);
                     break;
             }
 
