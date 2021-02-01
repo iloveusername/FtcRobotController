@@ -174,7 +174,7 @@ public class TeleOpMarkIII extends LinearOpMode {
                     //Press the Back button to return to origin at a speed of 0.75
                     if(gamepad1.back){
                         resetCount();
-                        goToOrigin(0.75);
+                        goToTargetBetterTurning(0,0,0.75);
                     }
 
                     //Drop a checkpoint by pressing Left Bumper.
@@ -1314,8 +1314,7 @@ public class TeleOpMarkIII extends LinearOpMode {
             //Gamer Switch Statement
             telemetry.addData("Type",targetLine);
             telemetry.update();
-            sleep(2500);
-
+            
             //Refresh the gyroscope.
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
             currentAngle = -angles.firstAngle;
