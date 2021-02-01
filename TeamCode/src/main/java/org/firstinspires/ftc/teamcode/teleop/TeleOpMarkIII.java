@@ -755,10 +755,7 @@ public class TeleOpMarkIII extends LinearOpMode {
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
             currentAngle = -angles.firstAngle;
 
-            //Turns the robot using encoders for accuracy. Adjust speed if you want.
-            int encoderTurn = (int) Math.round(((AngleOfTri - currentAngle)*rotToEncoder));
-            encoderTurn = Math.abs(encoderTurn);
-            encoderDrive(encoderTurn, 0.5);
+            rotateToAngle(AngleOfTri);
 
             //Moves the robot forward for the distance of the hypotenuse.
             wheelDirection("up");
@@ -983,10 +980,7 @@ public class TeleOpMarkIII extends LinearOpMode {
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
             currentAngle = -angles.firstAngle;
 
-            //Turns the robot using encoders for accuracy. Adjust speed if you want.
-            int encoderTurn = (int) Math.round(((AngleOfTri - currentAngle)*rotToEncoder));
-            encoderTurn = Math.abs(encoderTurn);
-            encoderDrive(encoderTurn, 0.75);
+            rotateToAngle(AngleOfTri);
 
             //Moves the robot forward for the distance of the hypotenuse.
             wheelDirection("down");
@@ -1011,29 +1005,32 @@ public class TeleOpMarkIII extends LinearOpMode {
         }
     }
 
-    public void rotateToAngleOld(double angle){
-        boolean isDone = false;
+//    public void rotateToAngleOld(double angle){
+//        boolean isDone = false;
+//
+//        while(!isDone) {
+//            //Determine if we need to spin left or right.
+//            if (angle > currentAngle) {
+//                wheelDirection("turnRight");
+//            }
+//            if (angle < currentAngle) {
+//                wheelDirection("turnLeft");
+//            }
+//
+//            //Turns the robot using encoders for accuracy. Adjust speed if you want.
+//            int encoderTurn = (int) Math.round(((angle - currentAngle) * rotToEncoder));
+//            encoderTurn = Math.abs(encoderTurn);
+//            encoderDrive(encoderTurn, 0.75);
+//
+//            isDone = true;
+//        }
+//    }
 
-        while(!isDone) {
-            //Determine if we need to spin left or right.
-            if (angle > currentAngle) {
-                wheelDirection("turnRight");
-            }
-            if (angle < currentAngle) {
-                wheelDirection("turnLeft");
-            }
-
-            //Turns the robot using encoders for accuracy. Adjust speed if you want.
-            int encoderTurn = (int) Math.round(((angle - currentAngle) * rotToEncoder));
-            encoderTurn = Math.abs(encoderTurn);
-            encoderDrive(encoderTurn, 0.75);
-
-            isDone = true;
-        }
-    }
-
+    //Compares your current angle to your desired angle, and finds the shortest angle to turn to reach it.
     public void rotateToAngle(double angle){
+        //Angle two is the sum of the distances to reach 180 from the current angle and from the desired angle.
         double angle2 = ((180-Math.abs(currentAngle)) + (180 - Math.abs(angle)));
+        //Angle three is simply the difference betweeen desired angle and current angle.
         double angle3 =  angle - currentAngle;
         telemetry.addData("Angle2", angle2);
         telemetry.addData("Angle3", angle3);
