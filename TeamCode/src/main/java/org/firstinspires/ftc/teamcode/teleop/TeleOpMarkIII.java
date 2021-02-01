@@ -177,11 +177,6 @@ public class TeleOpMarkIII extends LinearOpMode {
                         goToOrigin(0.75);
                     }
 
-                    //Test
-                    if(gamepad1.start){
-                        goToTargetBetterTurning(checkX,checkY,1);
-                    }
-
                     //Drop a checkpoint by pressing Left Bumper.
                     if(gamepad1.left_bumper){
                         checkX = currentX;
@@ -191,7 +186,7 @@ public class TeleOpMarkIII extends LinearOpMode {
                     //Go to the dropped checkpoint.
                     if(gamepad1.right_bumper){
                         resetCount();
-                        goToCoordinates(checkX, checkY,0.75);
+                        goToTargetBetterTurning(checkX, checkY,0.75);
                     }
 
                     //Go to the dropped checkpoint.
@@ -207,7 +202,8 @@ public class TeleOpMarkIII extends LinearOpMode {
                         currentAngle = -angles.firstAngle;
                         rotateToAngle(0);
                     }
-                    //Rotate to your starting angle by pressing B.
+
+                    //Rotate to the nearest multiple of 45 degrees.
                     if(gamepad1.left_stick_button){
                         rotateToAngle(45 * (Math.round(currentAngle/45)));
                         angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);

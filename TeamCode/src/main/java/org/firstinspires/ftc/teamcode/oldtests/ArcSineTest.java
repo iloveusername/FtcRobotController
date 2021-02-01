@@ -15,14 +15,19 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 @TeleOp(name="Arc Sine Test", group="Advanced")
 public class ArcSineTest extends LinearOpMode{
     private DcMotor leftDrive = null;
+
     private DcMotor rightDrive = null;
+
     private DcMotor BleftDrive = null;
+
     private DcMotor BrightDrive = null;
 
     boolean doMove = true;
 
     double leftTurn = 1;
+
     double rightTurn = 1;
+
     double adjustTurn = 0;
 
     double currentAngle = 0;
@@ -37,16 +42,15 @@ public class ArcSineTest extends LinearOpMode{
 
     //Line Shit
     double a = 2;
-    double b = Math.PI;
-    double c = 1;
-    double slopeToAngle = 0;
 
+    double b = Math.PI;
+
+    double c = 1;
+
+    double slopeToAngle = 0;
 
     //Bruh
     double startE = 0;
-
-
-
 
     BNO055IMU imu;
     Orientation angles;
