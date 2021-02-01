@@ -42,7 +42,7 @@ public class TeleOpMarkIII extends LinearOpMode {
     String currentDirection = "Up";
     String dirCheck = currentDirection;
 
-    //Prevents crashing when you haven't yet set a checkpoint.
+    //Initial Checkpoint is the origin.
     double checkX = 0;
     double checkY = 0;
 
@@ -1318,122 +1318,72 @@ public class TeleOpMarkIII extends LinearOpMode {
             //Gamer Switch Statement
             telemetry.addData("Type",targetLine);
             telemetry.update();
+            sleep(2500);
+
+            //Refresh the gyroscope.
+            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            currentAngle = -angles.firstAngle;
+
+            //Rotates to the target line.
+            rotateToAngle(AngleOfTri-targetLine);
+
+            if(targetLine == 225){
+                targetLine = -135;
+            }
+            if(targetLine == -225){
+                targetLine = 135;
+            }
+            if(targetLine == -180){
+                targetLine = 180;
+            }
+
             switch (targetLine){
                 case -135:
-                    //Refresh the gyroscope.
-                    angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                    currentAngle = -angles.firstAngle;
-
-                    //Rotates to the target line.
-                    rotateToAngle(AngleOfTri-targetLine);
-
                     //Moves the robot forward for the distance of the hypotenuse.
-                    wheelDirection("up");
-                    encoderDriveDiagonal((int) Math.round(HypotenuseOfTri * meterToEncoder), targetSpeed, false);
+                    wheelDirection("down");
+                    encoderDriveDiagonal((int) Math.round(HypotenuseOfTri * meterToEncoder), targetSpeed, true);
                     break;
 
                 case -90:
-                    //Refresh the gyroscope.
-                    angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                    currentAngle = -angles.firstAngle;
-
-                    //Rotates to the target line.
-                    rotateToAngle(AngleOfTri-targetLine);
-
-                    //Moves the robot forward for the distance of the hypotenuse.
+                   //Moves the robot forward for the distance of the hypotenuse.
                     wheelDirection("left");
                     encoderDrive((int) Math.round(HypotenuseOfTri * meterToEncoder), targetSpeed);
                     break;
 
                 case -45:
-                    //Refresh the gyroscope.
-                    angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                    currentAngle = -angles.firstAngle;
-
-                    //Rotates to the target line.
-                    rotateToAngle(AngleOfTri-targetLine);
-
                     //Moves the robot forward for the distance of the hypotenuse.
                     wheelDirection("up");
                     encoderDriveDiagonal((int) Math.round(HypotenuseOfTri * meterToEncoder), targetSpeed, false);
                     break;
 
                 case 0:
-                    //Refresh the gyroscope.
-                    angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                    currentAngle = -angles.firstAngle;
-
-                    //Rotates to the target line.
-                    rotateToAngle(AngleOfTri-targetLine);
-
                     //Moves the robot forward for the distance of the hypotenuse.
                     wheelDirection("up");
                     encoderDrive((int) Math.round(HypotenuseOfTri * meterToEncoder), targetSpeed);
                     break;
 
                 case 45:
-                    //Refresh the gyroscope.
-                    angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                    currentAngle = -angles.firstAngle;
-
-                    //Rotates to the target line.
-                    rotateToAngle(AngleOfTri-targetLine);
-
                     //Moves the robot forward for the distance of the hypotenuse.
                     wheelDirection("up");
                     encoderDriveDiagonal((int) Math.round(HypotenuseOfTri * meterToEncoder), targetSpeed, true);
                     break;
 
                 case 90:
-                    //Refresh the gyroscope.
-                    angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                    currentAngle = -angles.firstAngle;
-
-                    //Rotates to the target line.
-                    rotateToAngle(AngleOfTri-targetLine);
-
                     //Moves the robot forward for the distance of the hypotenuse.
                     wheelDirection("right");
                     encoderDrive((int) Math.round(HypotenuseOfTri * meterToEncoder), targetSpeed);
                     break;
 
                 case 135:
-                    //Refresh the gyroscope.
-                    angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                    currentAngle = -angles.firstAngle;
-
-                    //Rotates to the target line.
-                    rotateToAngle(AngleOfTri-targetLine);
-
                     //Moves the robot forward for the distance of the hypotenuse.
                     wheelDirection("down");
                     encoderDriveDiagonal((int) Math.round(HypotenuseOfTri * meterToEncoder), targetSpeed, false);
                     break;
 
                 case 180:
-                    //Refresh the gyroscope.
-                    angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                    currentAngle = -angles.firstAngle;
-
-                    //Rotates to the target line.
-                    rotateToAngle(AngleOfTri-targetLine);
-
                     //Moves the robot forward for the distance of the hypotenuse.
                     wheelDirection("down");
                     encoderDrive((int) Math.round(HypotenuseOfTri * meterToEncoder), targetSpeed);
-                    break;
-
-                case 225:
-                    //Refresh the gyroscope.
-                    angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                    currentAngle = -angles.firstAngle;
-
-                    //Rotates to the target line.
-                    rotateToAngle(AngleOfTri-targetLine);
-
-                    //Moves the robot forward for the distance of the hypotenuse.
-                    wheelDirection("down");
-                    encoderDriveDiagonal((int) Math.round(HypotenuseOfTri * meterToEncoder), targetSpeed, true);
                     break;
             }
 
