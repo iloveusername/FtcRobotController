@@ -83,6 +83,8 @@ public class WebcamTest2021FEB extends LinearOpMode {
      * {@link #tfod} is the variable we will use to store our instance of the TensorFlow Object
      * Detection engine.
      */
+    int i = 0;
+
     private TFObjectDetector tfod;
 
     @Override
@@ -124,16 +126,17 @@ public class WebcamTest2021FEB extends LinearOpMode {
                     if (updatedRecognitions != null) {
                       telemetry.addData("# Object Detected", updatedRecognitions.size());
                       // step through the list of recognitions and display boundary info.
-                      int i = 0;
+
                       for (Recognition recognition : updatedRecognitions) {
-                        telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
-                        telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
-                                recognition.getLeft(), recognition.getTop());
-                        telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
-                                recognition.getRight(), recognition.getBottom());
+//                          telemetry.addData("Label", recognition.getLabel());
+                          if(recognition.getLabel() == "Single"){
+                              i += 1;
+                          }
                       }
+                      telemetry.addData("I", i);
                       telemetry.update();
                     }
+
                 }
             }
         }
