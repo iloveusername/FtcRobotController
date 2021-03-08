@@ -31,9 +31,7 @@ package org.firstinspires.ftc.teamcode.autonomous;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -59,8 +57,8 @@ import java.util.List;
  * IMPORTANT: In order to use this OpMode, you need to obtain your own Vuforia license key as
  * is explained below.
  */
-@Autonomous(name = "Concept: TensorFlow Object Detection Webcam", group = "Concept")
-public class WebcamTest2021FEB extends LinearOpMode {
+@Autonomous(name = "Parking", group = "Concept")
+public class Parking extends LinearOpMode {
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
     private DcMotor BleftDrive = null;
@@ -187,37 +185,8 @@ public class WebcamTest2021FEB extends LinearOpMode {
 
         if (opModeIsActive()) {
             while (opModeIsActive()) {
-                if (tfod != null) {
-                    // getUpdatedRecognitions() will return null if no new information is available since
-                    // the last time that call was made.
-                    List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
-                    if (updatedRecognitions != null) {
-                      telemetry.addData("# Object Detected", updatedRecognitions.size());
-                      // step through the list of recognitions and display boundary info.
-
-                      for (Recognition recognition : updatedRecognitions) {
-//                          telemetry.addData("Label", recognition.getLabel());
-                          if(recognition.getLabel() == "Single"){
-                              goToTargetBetterTurning(0,3,0.5);
-                              basicClaw.setPosition(1);
-                              stop();
-                          }
-                          if(recognition.getLabel() == "Quad"){
-                              goToTarget(-0.5,3.5,0.5);
-                              basicClaw.setPosition(1);
-                              stop();
-                          }
-                      }
-                      telemetry.addData("I", i);
-                      telemetry.update();
-                    }
-                    else{
-                        goToTargetBetterTurning(-0.3,2,0.5);
-                        basicClaw.setPosition(1);
-                        stop();
-                    }
-
-                }
+                goToTarget(0,2,0.5);
+                stop();
             }
         }
 

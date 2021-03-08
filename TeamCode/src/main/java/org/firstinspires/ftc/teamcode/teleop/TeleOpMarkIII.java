@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.robot.RobotState;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
@@ -17,12 +18,17 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
     DRIVE, TURN, IDLE, UP, DOWN, LEFT, RIGHT, UPRIGHT, UPLEFT, DOWNRIGHT, DOWNLEFT
 }
 
+enum Wobblegrab {
+     OPEN, CLOSED
+}
+
 @TeleOp(name="TeleOp Mark III", group="Basic")
 public class TeleOpMarkIII extends LinearOpMode {
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
     private DcMotor BleftDrive = null;
     private DcMotor BrightDrive = null;
+    private Servo basicClaw  = null;
 
     //This is the onboard gyroscope, pretty neat.
     BNO055IMU imu;
@@ -53,6 +59,9 @@ public class TeleOpMarkIII extends LinearOpMode {
     //Robot starts off in the IDLE state.
     Robostate roboState = Robostate.IDLE;
 
+    //servo starts off in the OPEN state.
+    Wobblegrab wobblegrab = Wobblegrab.OPEN;
+
 
     @Override
     public void runOpMode() {
@@ -65,6 +74,9 @@ public class TeleOpMarkIII extends LinearOpMode {
         imu.initialize(parameters);
 
         waitForStart();
+
+        basicClaw = hardwareMap.get(Servo.class, "first");
+        basicClaw.setDirection(Servo.Direction.FORWARD);
 
         //Lines 62-82 of code set up the motors for use.
         leftDrive = hardwareMap.get(DcMotor.class, "FL");
@@ -99,6 +111,24 @@ public class TeleOpMarkIII extends LinearOpMode {
             //Refresh the gyroscope every loop.
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
             currentAngle = -angles.firstAngle;
+
+            //Servo Finite State Machine.
+            switch (wobblegrab) {
+
+                case OPEN:
+                    if(gamepad1.y){
+                        wobblegrab = Wobblegrab.CLOSED;
+                    }
+                    basicClaw.setPosition(0);
+                    break;
+
+                case CLOSED:
+                    if(gamepad1.y){
+                        wobblegrab = Wobblegrab.OPEN;
+                    }
+                    basicClaw.setPosition(1);
+                    break;
+            }
 
             //The Finite State Machine.
             switch (roboState){
@@ -1061,43 +1091,43 @@ public class TeleOpMarkIII extends LinearOpMode {
         switch (dir){
             case "up":
                 currentDirection = "Up";
-                leftDrive.setDirection(DcMotor.Direction.FORWARD);
-                rightDrive.setDirection(DcMotor.Direction.REVERSE);
-                BleftDrive.setDirection(DcMotor.Direction.FORWARD);
-                BrightDrive.setDirection(DcMotor.Direction.REVERSE);
+                leftDrive.setDirection(DcMotor.Direction.REVERSE);
+                rightDrive.setDirection(DcMotor.Direction.FORWARD);
+                BleftDrive.setDirection(DcMotor.Direction.REVERSE);
+                BrightDrive.setDirection(DcMotor.Direction.FORWARD);
                 break;
             case "down":
                 currentDirection = "Down";
-                leftDrive.setDirection(DcMotor.Direction.REVERSE);
-                rightDrive.setDirection(DcMotor.Direction.FORWARD);
-                BleftDrive.setDirection(DcMotor.Direction.REVERSE);
-                BrightDrive.setDirection(DcMotor.Direction.FORWARD);
+                leftDrive.setDirection(DcMotor.Direction.FORWARD);
+                rightDrive.setDirection(DcMotor.Direction.REVERSE);
+                BleftDrive.setDirection(DcMotor.Direction.FORWARD);
+                BrightDrive.setDirection(DcMotor.Direction.REVERSE);
                 break;
             case "left":
                 currentDirection = "Left";
-                leftDrive.setDirection(DcMotor.Direction.REVERSE);
-                rightDrive.setDirection(DcMotor.Direction.REVERSE);
-                BleftDrive.setDirection(DcMotor.Direction.FORWARD);
-                BrightDrive.setDirection(DcMotor.Direction.FORWARD);
+                leftDrive.setDirection(DcMotor.Direction.FORWARD);
+                rightDrive.setDirection(DcMotor.Direction.FORWARD);
+                BleftDrive.setDirection(DcMotor.Direction.REVERSE);
+                BrightDrive.setDirection(DcMotor.Direction.REVERSE);
                 break;
             case "right":
                 currentDirection = "Right";
-                leftDrive.setDirection(DcMotor.Direction.FORWARD);
-                rightDrive.setDirection(DcMotor.Direction.FORWARD);
-                BleftDrive.setDirection(DcMotor.Direction.REVERSE);
-                BrightDrive.setDirection(DcMotor.Direction.REVERSE);
-                break;
-            case "turnLeft":
                 leftDrive.setDirection(DcMotor.Direction.REVERSE);
                 rightDrive.setDirection(DcMotor.Direction.REVERSE);
-                BleftDrive.setDirection(DcMotor.Direction.REVERSE);
-                BrightDrive.setDirection(DcMotor.Direction.REVERSE);
+                BleftDrive.setDirection(DcMotor.Direction.FORWARD);
+                BrightDrive.setDirection(DcMotor.Direction.FORWARD);
                 break;
-            case "turnRight":
+            case "turnLeft":
                 leftDrive.setDirection(DcMotor.Direction.FORWARD);
                 rightDrive.setDirection(DcMotor.Direction.FORWARD);
                 BleftDrive.setDirection(DcMotor.Direction.FORWARD);
                 BrightDrive.setDirection(DcMotor.Direction.FORWARD);
+                break;
+            case "turnRight":
+                leftDrive.setDirection(DcMotor.Direction.REVERSE);
+                rightDrive.setDirection(DcMotor.Direction.REVERSE);
+                BleftDrive.setDirection(DcMotor.Direction.REVERSE);
+                BrightDrive.setDirection(DcMotor.Direction.REVERSE);
                 break;
         }
     }
