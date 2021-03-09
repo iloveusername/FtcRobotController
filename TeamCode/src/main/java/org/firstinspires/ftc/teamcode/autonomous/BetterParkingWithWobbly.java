@@ -58,7 +58,7 @@ import java.util.List;
  * IMPORTANT: In order to use this OpMode, you need to obtain your own Vuforia license key as
  * is explained below.
  */
-@Autonomous(name = "Parking", group = "Concept")
+@Autonomous(name = "BetterParkingWithWobbly", group = "Concept")
 public class BetterParkingWithWobbly extends LinearOpMode {
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
@@ -114,7 +114,7 @@ public class BetterParkingWithWobbly extends LinearOpMode {
     String currentDirection = "Up";
     String dirCheck = currentDirection;
     String autonomousState = "Detect";
-    int Step = 0;
+    int Step = 1;
 
     //Initial Checkpoint is the origin.
     double checkX = 0;
