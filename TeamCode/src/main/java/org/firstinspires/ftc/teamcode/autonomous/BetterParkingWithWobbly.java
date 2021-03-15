@@ -220,6 +220,7 @@ public class BetterParkingWithWobbly extends LinearOpMode {
                         break;
 
                     case ("0"):
+                        goToTargetBetterTurning(0,1,0.5);
                         goToTargetBetterTurning(-1,2,0.5);
                         rotateToAngle(90);
                         basicClaw.setPosition(1);
@@ -255,6 +256,10 @@ public class BetterParkingWithWobbly extends LinearOpMode {
                         goToTargetBetterTurning(-0.85,3.2,0.5);
                         rotateToAngle(180);
                         basicClaw.setPosition(1);
+                        //Refresh the gyroscope.
+                        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                        currentAngle = -angles.firstAngle;
+                        rotateToAngle(179.9);
                         goToTargetBetterTurning(-0.85,2,0.5);
                         stop();
 
