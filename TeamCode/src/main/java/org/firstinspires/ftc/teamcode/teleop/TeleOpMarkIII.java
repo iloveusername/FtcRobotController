@@ -35,7 +35,7 @@ public class TeleOpMarkIII extends LinearOpMode {
     Orientation angles;
 
     //This is a ratio for ratio things. About 2000 Encoder Ticks to a 90 Degree Turn. Default is ~22, Adjust to deal with encoder loss if needed. 1620 ticks for one meter, I think. I don't have a meter stick, so who really knows.
-    static final double rotToEncoder = 2065 / 90;
+    static final double rotToEncoder = 2065 / 90 /2;
     static final double meterToEncoder = 1620;
 
     //Sets up odometry.
@@ -44,6 +44,7 @@ public class TeleOpMarkIII extends LinearOpMode {
     double currentY = 0;
     boolean trackEncoders = false;
     boolean doneTurn = false;
+    boolean canServoPress = true;
     double averagePos;
     String currentDirection = "Up";
     String dirCheck = currentDirection;
@@ -116,15 +117,23 @@ public class TeleOpMarkIII extends LinearOpMode {
             switch (wobblegrab) {
 
                 case OPEN:
-                    if(gamepad1.y){
+                    if(gamepad1.y && canServoPress){
+                        canServoPress = false;
                         wobblegrab = Wobblegrab.CLOSED;
+                    }
+                    if(!gamepad1.y){
+                        canServoPress = true;
                     }
                     basicClaw.setPosition(0);
                     break;
 
                 case CLOSED:
-                    if(gamepad1.y){
+                    if(gamepad1.y && canServoPress){
+                        canServoPress = false;
                         wobblegrab = Wobblegrab.OPEN;
+                    }
+                    if(!gamepad1.y){
+                        canServoPress = true;
                     }
                     basicClaw.setPosition(1);
                     break;
@@ -691,6 +700,7 @@ public class TeleOpMarkIII extends LinearOpMode {
 //            telemetry.addData("Checkpoint X", checkX);
 //            telemetry.addData("Checkpoint Y", checkY);
             telemetry.addData("State", roboState);
+            telemetry.addData("TimeMili",System.currentTimeMillis());
             telemetry.update();
 
         }

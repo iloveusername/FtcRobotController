@@ -101,20 +101,21 @@ public class BetterParkingWithWobbly extends LinearOpMode {
     Orientation angles;
 
     //This is a ratio for ratio things. About 2000 Encoder Ticks to a 90 Degree Turn. Default is ~22, Adjust to deal with encoder loss if needed. 1620 ticks for one meter, I think. I don't have a meter stick, so who really knows.
-    static final double rotToEncoder = 2065 / 90;
+    static final double rotToEncoder = 2065 / 90 / 2;
     static final double meterToEncoder = 1620;
 
     //Sets up odometry.
     double currentAngle = 0;
     double currentX = 0;
     double currentY = 0;
+    double startTimer = 0;
     boolean trackEncoders = false;
     boolean doneTurn = false;
     double averagePos;
     String currentDirection = "Up";
     String dirCheck = currentDirection;
-    String autonomousState = "Detect";
-    int Step = 1;
+    String autonomousState = "Startup";
+    int Step = 0;
 
     //Initial Checkpoint is the origin.
     double checkX = 0;
@@ -194,6 +195,7 @@ public class BetterParkingWithWobbly extends LinearOpMode {
                             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
                             if (updatedRecognitions != null) {
                                 telemetry.addData("# Object Detected", updatedRecognitions.size());
+                                telemetry.update();
 
                                 for (Recognition recognition : updatedRecognitions) {
                                     if(recognition.getLabel() == "Single"){
@@ -202,50 +204,43 @@ public class BetterParkingWithWobbly extends LinearOpMode {
                                     if(recognition.getLabel() == "Quad"){
                                         autonomousState = "4";
                                     }
+
                                 }
                                 telemetry.addData("I", i);
                                 telemetry.update();
                             }
-                            else{
+                            if (System.currentTimeMillis() >= (startTimer + 2000)){
                                 autonomousState = "0";
                             }
-
+//                            else{
+//                                autonomousState = "0";
+                            //}
                         }
 
                         break;
 
                     case ("0"):
-                        switch (Step){
-                            case (1):
-                                goToTargetBetterTurning(0,3,0.5);
-                                break;
-                            case (2):
-                                goToTargetBetterTurning(-2,0,0.5);
-                                basicClaw.setPosition(1);
-                                break;
-                            case (3):
-                                goToTargetBetterTurning(0,0.2,0.5);
-                                break;
-                            case (4):
-                                stop();
-                                break;
-                        }
+                        goToTargetBetterTurning(-1,2,0.5);
+                        rotateToAngle(90);
+                        basicClaw.setPosition(1);
+                        goToTargetBetterTurning(-0.75,2,0.5);
+                        stop();
                         break;
 
                     case ("1"):
                         switch (Step){
                             case (1):
-                                goToTargetBetterTurning(0,5.5,0.5);
+                                goToTargetBetterTurning(0,2.7,0.5);
                                 basicClaw.setPosition(1);
                                 break;
                             case (2):
-                                goToTargetBetterTurning(0,0.5,0.5);
+                                goToTargetBetterTurning(0,3,0.5);
                                 break;
                             case (3):
-                                goToTargetBetterTurning(2,0,0.5);
+                                goToTargetBetterTurning(0.5,3,0.5);
                                 break;
                             case (4):
-                                goToTargetBetterTurning(0,-3,0.5);
+                                goToTargetBetterTurning(0.5,2,0.5);
                                 break;
                             case (5):
                                 stop();
@@ -253,7 +248,39 @@ public class BetterParkingWithWobbly extends LinearOpMode {
                         }
 
                         break;
+
+                    case ("4"):
+                        goToTargetBetterTurning(0,0.05,0.5);
+                        goToTargetBetterTurning(-0.85,0,0.5);
+                        goToTargetBetterTurning(-0.85,3.2,0.5);
+                        rotateToAngle(180);
+                        basicClaw.setPosition(1);
+                        goToTargetBetterTurning(-0.85,2,0.5);
+                        stop();
+
+
+                        break;
+
+                    case ("Startup"):
+                        switch (Step){
+                            case (0):
+                                goToTargetBetterTurning(0,0.45,0.5);
+                                break;
+                            case (1):
+                                startTimer = System.currentTimeMillis();
+                                autonomousState = "Detect";
+                                break;
+                        }
+                        break;
                 }
+
+                telemetry.addData("Check Direction", dirCheck);
+                telemetry.addData("Current Rot", currentAngle);
+                telemetry.addData("Current X", currentX);
+                telemetry.addData("Current Y", currentY);
+                telemetry.addData("LeftPos", leftDrive.getCurrentPosition());
+                telemetry.addData("RightPos", rightDrive.getCurrentPosition());
+                telemetry.update();
             }
         }
 
@@ -383,15 +410,15 @@ public class BetterParkingWithWobbly extends LinearOpMode {
             wheelDirection("up");
             encoderDrive((int) Math.round(HypotenuseOfTri * meterToEncoder), targetSpeed);
 
-            //Telemetry stuff for debugging.
-            telemetry.addData("Distance To Rotate", (AngleOfTri - currentAngle));
-            telemetry.addData("Angle Of Attack", AngleOfTri);
-            telemetry.addData("Hypotenuse", HypotenuseOfTri);
-            telemetry.addData("Quadrant", Quadrant);
-            telemetry.addData("Current X", currentX);
-            telemetry.addData("Current Y", currentY);
-            telemetry.addData("Current Rot", currentAngle);
-            telemetry.update();
+//            //Telemetry stuff for debugging.
+//            telemetry.addData("Distance To Rotate", (AngleOfTri - currentAngle));
+//            telemetry.addData("Angle Of Attack", AngleOfTri);
+//            telemetry.addData("Hypotenuse", HypotenuseOfTri);
+//            telemetry.addData("Quadrant", Quadrant);
+//            telemetry.addData("Current X", currentX);
+//            telemetry.addData("Current Y", currentY);
+//            telemetry.addData("Current Rot", currentAngle);
+//            telemetry.update();
 
             //Updates current position and rotation.
             currentX += targetX;
@@ -504,14 +531,14 @@ public class BetterParkingWithWobbly extends LinearOpMode {
         currentX = coordX;
         currentY = coordY;
 
-        //Telemetry stuff for debugging.
-        telemetry.addData("Angle Of Attack", AngleOfTri);
-        telemetry.addData("Hypotenuse", HypotenuseOfTri);
-        telemetry.addData("Quadrant", Quadrant);
-        telemetry.addData("Current X", currentX);
-        telemetry.addData("Current Y", currentY);
-        telemetry.addData("Current Rot", currentAngle);
-        telemetry.update();
+//        //Telemetry stuff for debugging.
+//        telemetry.addData("Angle Of Attack", AngleOfTri);
+//        telemetry.addData("Hypotenuse", HypotenuseOfTri);
+//        telemetry.addData("Quadrant", Quadrant);
+//        telemetry.addData("Current X", currentX);
+//        telemetry.addData("Current Y", currentY);
+//        telemetry.addData("Current Rot", currentAngle);
+//        telemetry.update();
 
     }
 
@@ -651,13 +678,14 @@ public class BetterParkingWithWobbly extends LinearOpMode {
 
     //Compares your current angle to your desired angle, and finds the shortest angle to turn to reach it.
     public void rotateToAngle(double angle){
+
         //Angle two is the sum of the distances to reach 180 from the current angle and from the desired angle.
         double angle2 = ((180-Math.abs(currentAngle)) + (180 - Math.abs(angle)));
         //Angle three is simply the difference betweeen desired angle and current angle.
         double angle3 =  angle - currentAngle;
-        telemetry.addData("Angle2", angle2);
-        telemetry.addData("Angle3", angle3);
-        telemetry.update();
+//        telemetry.addData("Angle2", angle2);
+//        telemetry.addData("Angle3", angle3);
+//        telemetry.update();
         if(angle2 < Math.abs(angle3)){
             if (angle2 > currentAngle) {
                 wheelDirection("turnLeft");
@@ -938,9 +966,9 @@ public class BetterParkingWithWobbly extends LinearOpMode {
 //                targetLine = -180;
 //            }
 
-            //Gamer Switch Statement
-            telemetry.addData("Type",targetLine);
-            telemetry.update();
+//            //Gamer Switch Statement
+//            telemetry.addData("Type",targetLine);
+//            telemetry.update();
 
             //Refresh the gyroscope.
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
@@ -1009,15 +1037,15 @@ public class BetterParkingWithWobbly extends LinearOpMode {
                     break;
             }
 
-            //Telemetry stuff for debugging.
-            telemetry.addData("Distance To Rotate", (AngleOfTri - currentAngle));
-            telemetry.addData("Angle Of Attack", AngleOfTri);
-            telemetry.addData("Hypotenuse", HypotenuseOfTri);
-            telemetry.addData("Quadrant", Quadrant);
-            telemetry.addData("Current X", currentX);
-            telemetry.addData("Current Y", currentY);
-            telemetry.addData("Current Rot", currentAngle);
-            telemetry.update();
+//            //Telemetry stuff for debugging.
+//            telemetry.addData("Distance To Rotate", (AngleOfTri - currentAngle));
+//            telemetry.addData("Angle Of Attack", AngleOfTri);
+//            telemetry.addData("Hypotenuse", HypotenuseOfTri);
+//            telemetry.addData("Quadrant", Quadrant);
+//            telemetry.addData("Current X", currentX);
+//            telemetry.addData("Current Y", currentY);
+//            telemetry.addData("Current Rot", currentAngle);
+//            telemetry.update();
 
             //Updates current position and rotation.
             currentX += targetX;

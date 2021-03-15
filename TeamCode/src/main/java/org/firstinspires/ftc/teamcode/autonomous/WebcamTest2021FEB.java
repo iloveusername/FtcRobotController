@@ -102,7 +102,7 @@ public class WebcamTest2021FEB extends LinearOpMode {
     Orientation angles;
 
     //This is a ratio for ratio things. About 2000 Encoder Ticks to a 90 Degree Turn. Default is ~22, Adjust to deal with encoder loss if needed. 1620 ticks for one meter, I think. I don't have a meter stick, so who really knows.
-    static final double rotToEncoder = 2065 / 90;
+    static final double rotToEncoder = 2065 / 90 / 2;
     static final double meterToEncoder = 1620;
 
     //Sets up odometry.
